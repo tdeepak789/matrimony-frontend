@@ -1,0 +1,71 @@
+<a routerLink="user-profile">create user profile</a>
+<label>
+  Search by Name:
+  <input type="text" [(ngModel)]="searchText" placeholder="Enter name..." />
+</label>
+
+<label>
+  Filter by Gender:
+  <select [(ngModel)]="selectedGender">
+    <option value="">All</option>
+    <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+  </select>
+</label>
+
+<label>
+  Filter by Religion:
+  <select [(ngModel)]="selectedReligion">
+    <option value="">All</option>
+    <option *ngFor="let r of religions" [value]="r">{{ r }}</option>
+  </select>
+</label>
+
+<label>
+  Filter by Caste:
+  <input type="text" [(ngModel)]="selectedCaste" placeholder="Enter Caste name..." />
+</label>
+
+<label>
+  Filter by Maroital Status:
+  <select [(ngModel)]="selectedMaritalStatus">
+    <option value="">All</option>
+    <option *ngFor="let m of maritalStatuses" [value]="m">{{ m }}</option>
+  </select>
+</label>
+@for ( user of filteredUsers(); track $index) {
+    <hr>
+    <div>
+        <ul>
+            <li>
+               
+                    <img [src]="getFileUrl(user.id)"
+                        alt="User Photo"
+                        width="100" height="100" />
+                  
+            </li>
+            <li>Full Name     : {{user.firstName}} {{user.lastName}}</li>  
+            <li>Date of Birth : {{ user.dateOfBirth | date:'yyyy-MM-dd' }}</li>
+            <li>Time of Birth : {{ user.dateOfBirth | date:'HH:mm' }}</li>
+            <li>Gender        : {{user.gender}}</li>
+            <li>Caste         : {{user.caste}}</li>
+            <li>Height        : {{user.height}}</li>
+            <li>Marital Status: {{user.maritalStatus}}</li>
+            <li>Employed In   : {{user.occupation}}</li>
+            <li>Income        : {{user.income}}</li>
+            
+            
+
+            
+        </ul>
+        <a [routerLink]="['/user-details', user.id]">View Details</a>
+            <br>
+        <a [routerLink]="['/user-edit', user.id]">Edit</a>
+        <form >
+            <button type="button" (click)="deleteUser(user.id)">Delete</button>
+        </form>
+    </div>
+    <hr>
+
+    
+    
+}

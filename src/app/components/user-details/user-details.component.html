@@ -1,0 +1,74 @@
+<p>user-details works!</p>
+<a routerLink="/user-profile">create user profile</a>
+<br>
+<a routerLink="">List all Users</a>
+@if (user)
+{
+    <div>
+        <ul>
+            <li>
+               
+                    <img [src]="getFileUrl(user.id)"
+                        alt="User Photo"
+                        width="100" height="100" />
+                  
+            </li>
+            <li>
+                <div>
+                    <form  enctype="multipart/form-data">
+                        <label>
+                            Upload Pictures (Max 3)
+                            <input type="file" name="photos" (change)="onFileChange($event,user.id)" accept="image/*" multiple />
+                        </label>
+
+                        <button type="button" (click)="onPhotoSubmit(user.id)">Submit</button>
+                    </form>
+
+                </div>
+            </li>
+
+            <div>
+                <h5>Basic Details</h5>
+                    <li>Full Name     : {{user.firstName}} {{user.lastName}}</li>  
+                    <li>Date of Birth : {{ user.dateOfBirth | date:'yyyy-MM-dd' }}</li>
+                    <li>Time of Birth : {{ user.dateOfBirth | date:'HH:mm' }}</li>
+                    <li>Gender        : {{user.gender}}</li>
+                    <li>Height        : {{user.height}}</li>
+                    <li>Marital Status: {{user.maritalStatus}}</li>
+                    <li>Bio           : {{user.bio}}</li>
+                    <li>motherTongue  : {{user.motherTongue}}</li>
+                    <li>Phone Number  : {{user.phoneNumber}}</li>
+            </div>
+            <div>
+                <h5>Religious Details</h5>
+                    <li>Religion      : {{user.religion}}</li>
+                    <li>Caste         : {{user.caste}}</li>
+                    <li>Gothram       : {{user.gothram}}</li>
+                    <li>Rasi : {{user.rasi}}</li>
+                    <li>Star : {{user.star}}</li>
+                    
+            </div>
+            <div>
+                <h5>Professional Details</h5>
+                    <li>Employed In   : {{user.occupation}}</li>
+                    <li>Income        : {{user.income}}</li>
+                    <li>Work Location : {{user.workLocation}}</li>
+                    <li>Education     : {{user.education}}</li>
+            </div>
+            <div>
+                <h5>Addres Details</h5>
+                    <li>City : {{user.city}}</li>
+                    <li>State: {{user.state}}</li>
+                    <li>Country: {{user.country}}</li>
+            </div>            
+        </ul>
+        <a [routerLink]="['/user-edit', user.id]">Edit</a>
+        <form >
+           <button type="button" (click)="deleteUser(user.id)">Delete</button>
+        </form>
+    </div>
+
+}
+    
+    
+    

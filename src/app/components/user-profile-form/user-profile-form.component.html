@@ -1,0 +1,132 @@
+<form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+  <label>
+    First Name
+    <input type="text" formControlName="firstName" />
+  </label>
+  <label>
+    Last Name
+    <input type="text" formControlName="lastName" />
+  </label>
+  <label>
+    Email
+    <input type="email" formControlName="email" />
+  </label>
+  <label>
+    Date Of Birth
+    <input type="date" formControlName="dateOfBirth" />
+  </label>
+  <label>
+    Time Of Birth
+    <input type="time" formControlName="timeOfBirth" />
+  </label>
+  <label>
+    Phone Number
+    <input type="tel" formControlName="phoneNumber" />
+  </label>
+  <label >
+    gender
+    <select formControlName="gender">
+      <option value="">Select Gender</option>
+      <option *ngFor="let gender of genders" [value]="gender">{{gender}}</option>
+    </select>
+  </label>
+  <label for="">
+    bio
+    <input type="text" formControlName="bio">
+  </label>
+
+  <label >
+    height
+    <input type="number" formControlName="height">
+  </label>
+  <label>
+    maritalStatus
+    <select formControlName="maritalStatus">
+      <option value="">Select Marital Status</option>
+      <option *ngFor="let status of maritalStatuses" [value]="status">{{ status }}</option>
+    </select>
+  </label>
+
+  <label>
+    religion
+    <select formControlName="religion">
+      <option value="">Select religion</option>
+      <option *ngFor="let r of religions" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+  <label>
+    caste
+    <input type="text" formControlName="caste">
+  </label>
+  <label for="">
+    subCaste
+    <input type="text" formControlName="subcaste">
+  </label>
+  <label for="">
+    gothram
+    <input type="text" formControlName="gothram">
+  </label>
+  <label for="">
+    star
+    <select formControlName="star">
+      <option value="">Select Star</option>
+      <option *ngFor="let s of star" [value]="s">{{ s }}</option>
+    </select>
+  </label>
+  <label for="">
+    rasi
+    <select formControlName="rasi">
+      <option value="">Select Rasi</option>
+      <option *ngFor="let r of rasi" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+
+  <label for="">
+    education
+    <input type="text" formControlName="education">
+  </label>
+
+  <label for="">
+    occupation
+    <input type="text" formControlName="occupation">
+  </label>
+
+  <label for="">
+    annualIncome
+    <input type="number" formControlName="income">
+  </label>
+  <label for="">
+    country
+    <select formControlName="country">
+      <option value="">Select Country</option>
+      <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+    </select>
+  </label>
+  <label for="">
+    state
+    <select formControlName="state">
+      <option value="">Select State</option>
+      <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+    </select>
+  </label>
+  <label for="">
+    city
+    <select formControlName="city">
+      <option value="">Select City</option>
+      <option *ngFor="let c of cities" [value]="c">{{ c }}</option>
+    </select>
+  </label>
+  <label for="">
+    work Location
+    <input type="text" formControlName="workLocation">
+  </label>
+  <label>
+    motherTongue
+    <select formControlName="motherTongue">
+      <option value="">Select Language</option>
+      <option *ngFor="let r of languages" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+  <button type="submit">Submit</button>
+  <a routerLink="">cancel</a>
+</form>
