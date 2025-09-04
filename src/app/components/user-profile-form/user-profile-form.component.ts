@@ -55,15 +55,14 @@ export class UserProfileFormComponent {
   }
   constructor(private userService: UserserviceService , private router:Router,private route: ActivatedRoute) {}
   profileForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
+    email: new FormControl('',  Validators.email),
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
+    password: new FormControl('',Validators.required),
     dateOfBirth: new FormControl('', Validators.required),
     timeOfBirth: new FormControl('', Validators.required),
     gender: new FormControl('', Validators.required),
     bio: new FormControl(''),
-    createdAt: new FormControl(''),
-    updatedAt: new FormControl(''),
     height: new FormControl(0),
     maritalStatus: new FormControl(''),
     religion: new FormControl(''),
@@ -80,7 +79,7 @@ export class UserProfileFormComponent {
     state: new FormControl(''),
     city: new FormControl(''),
     motherTongue: new FormControl(''),
-    phoneNumber: new FormControl(0)
+    phoneNumber: new FormControl(0,[Validators.required])
   });
   onFileChange(event: any) {
     const files: FileList = event.target.files;
@@ -104,7 +103,7 @@ export class UserProfileFormComponent {
                           DateOfBirth: birthDateTime,
                           Gender: this.profileForm.value.gender,
                           Bio: this.profileForm.value.bio,
-                          
+                          Password : this.profileForm.value.password,
                           Height: this.profileForm.value.height,
                           MaritalStatus: this.profileForm.value.maritalStatus,
                           Religion: this.profileForm.value.religion,
@@ -148,9 +147,17 @@ export class UserProfileFormComponent {
       }
       
     } else {
-      alert("Please fill all required fields correctly.");
-      alert(JSON.stringify(this.profileForm.errors));
-      console.error('Form is invalid');
+      const invalidFields: string[] = [];
+
+      Object.keys(this.profileForm.controls).forEach(key => {
+        const control = this.profileForm.get(key);
+        if (control && control.invalid) {
+          invalidFields.push(key);
+        }
+      });
+
+      alert("Please fill all required fields: " + invalidFields.join(", "));
+      console.error('Form is invalid', invalidFields);
     }
   }
 
