@@ -1,0 +1,20 @@
+<p>navbar works!</p>
+<div>
+    <!-- Show Logout when logged in -->
+    <button 
+      *ngIf="auth.isLoggedIn()" 
+      (click)="logout()" 
+     >
+      Logout
+    </button>
+    <ul>
+      <!-- Show Login when not logged in -->
+    <li *ngIf="!auth.isLoggedIn() && isLoginPage()" ><a routerLink="/user-profile" >Register User</a></li>
+    <li *ngIf="!auth.isLoggedIn() && isCreateUserProfilePage()" ><a routerLink="/login" >Login</a></li> 
+    <li *ngIf="auth.isLoggedIn()" ><a routerLink="/user-list" >list of users</a></li>
+    <!-- <li *ngIf="auth.isLoggedIn()" ><a routerLink="/user-details/{userId}" >Profile</a></li>  -->
+     <li *ngIf="auth.isLoggedIn()"> <a routerLink="/user-profile">Create New Profile</a></li>
+    </ul>
+    <hr>
+    <hr>
+  </div>

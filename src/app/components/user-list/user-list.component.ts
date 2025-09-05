@@ -138,7 +138,7 @@ export class UserListComponent {
         (response) => {
           console.log(`User ${userId} deleted successfully`);
           alert('User deleted successfully');
-          this.router.navigate(['']);
+          this.router.navigate(['user-list']);
           
         },
         (error) => {

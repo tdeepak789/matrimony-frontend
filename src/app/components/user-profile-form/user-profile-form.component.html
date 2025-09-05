@@ -1,32 +1,40 @@
 <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-  <label>
+  <div *ngIf="step === 0">
+    <label>
     First Name
     <input type="text" formControlName="firstName" />
   </label>
+  <br>
   <label>
     Last Name
     <input type="text" formControlName="lastName" />
   </label>
+  <br>
   <label>
     Email
     <input type="email" formControlName="email" />
   </label>
+  <br>
   <label>
     Phone Number
     <input type="tel" formControlName="phoneNumber" />
   </label>
+  <br>
   <label>
     Password
     <input type="password" formControlName="password" />
   </label>
+  <br>
   <label>
     Date Of Birth
     <input type="date" formControlName="dateOfBirth" />
   </label>
+  <br>
   <label>
     Time Of Birth
     <input type="time" formControlName="timeOfBirth" />
   </label>
+  <br>
   
   <label >
     gender
@@ -35,15 +43,25 @@
       <option *ngFor="let gender of genders" [value]="gender">{{gender}}</option>
     </select>
   </label>
+  <br>
   <label for="">
     bio
     <input type="text" formControlName="bio">
   </label>
-
+  <br>
+    <label>
+    motherTongue
+    <select formControlName="motherTongue">
+      <option value="">Select Language</option>
+      <option *ngFor="let r of languages" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+<br>
   <label >
     height
     <input type="number" formControlName="height">
   </label>
+  <br>
   <label>
     maritalStatus
     <select formControlName="maritalStatus">
@@ -52,7 +70,12 @@
     </select>
   </label>
 
-  <label>
+    <br>
+    <button type="button" (click)="nextStep()">Next</button>
+  </div>
+  
+  <div *ngIf="step === 1">
+    <label>
     religion
     <select formControlName="religion">
       <option value="">Select religion</option>
@@ -86,6 +109,12 @@
     </select>
   </label>
 
+    <button type="button" (click)="previousStep()">Previous</button>
+    <button type="button" (click)="nextStep()">Next</button>
+  </div>
+
+  
+<div *ngIf="step === 2">
   <label for="">
     education
     <input type="text" formControlName="education">
@@ -100,6 +129,11 @@
     annualIncome
     <input type="number" formControlName="income">
   </label>
+    <button type="button" (click)="previousStep()">Previous</button>
+    <button type="button" (click)="nextStep()">Next</button>
+</div>
+  
+<div *ngIf="step === 3">
   <label for="">
     country
     <select formControlName="country">
@@ -125,13 +159,11 @@
     work Location
     <input type="text" formControlName="workLocation">
   </label>
-  <label>
-    motherTongue
-    <select formControlName="motherTongue">
-      <option value="">Select Language</option>
-      <option *ngFor="let r of languages" [value]="r">{{ r }}</option>
-    </select>
-  </label>
-  <button type="submit">Submit</button>
-  <a routerLink="">cancel</a>
+    <button type="button" (click)="previousStep()">Previous</button>
+     <button type="submit">Submit</button>
+</div>
+  
+  
+ 
+  <a routerLink="/user-list">cancel</a>
 </form>

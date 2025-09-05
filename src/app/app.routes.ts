@@ -5,7 +5,7 @@ import { UserDetailsComponent } from './components/user-details/user-details.com
 import { LoginComponent } from './components/login/login.component';
 
 export const routes: Routes = [
-  { path: '', component: UserListComponent ,},
+  { path: 'user-list', component: UserListComponent ,},
   { path: 'user-profile', component: UserProfileFormComponent},
   { path: 'user-details/:userId', component: UserDetailsComponent},
   { path: 'user-edit/:userId', component: UserProfileFormComponent},

@@ -24,7 +24,7 @@ export class UserProfileFormComponent {
   star: string[]=[];
   rasi: string[]=[];
   selectedFiles: File[] = [];
-
+  step = 0; 
   isEditMode = false;
   userId!: number;
   
@@ -92,6 +92,15 @@ export class UserProfileFormComponent {
       this.selectedFiles.push(files[i]);
     }
   }
+
+   nextStep() {
+    this.step++;
+  }
+
+  previousStep() {
+    if (this.step > 0) this.step--;
+  }
+
 
   onSubmit() {
     if (this.profileForm.valid) {

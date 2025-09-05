@@ -26,7 +26,7 @@ export class LoginComponent {
     this.auth.login({ username: this.username, password: this.password }).subscribe({
       next: (res) => {
         this.auth.saveToken(res.token);
-        this.router.navigate(['']);
+        this.router.navigate(['/user-list']);
       },
       error: (err) => console.error('Login failed', err)
     });

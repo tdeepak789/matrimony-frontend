@@ -4,10 +4,11 @@ import { UserListComponent } from './components/user-list/user-list.component';
 import { UserProfileFormComponent } from './components/user-profile-form/user-profile-form.component';
 import { UserDetailsComponent } from './components/user-details/user-details.component';
 import { LoginComponent } from './components/login/login.component';
+import { NavbarComponent } from './navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,UserListComponent, UserProfileFormComponent,UserDetailsComponent,LoginComponent],
+  imports: [RouterOutlet,UserListComponent, UserProfileFormComponent,UserDetailsComponent,LoginComponent, NavbarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

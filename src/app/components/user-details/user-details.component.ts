@@ -2,17 +2,20 @@ import { Component, Input } from '@angular/core';
 import { UserProfile } from '../../models/app.models';
 import { UserserviceService } from '../../services/userservice.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-user-details',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink,FormsModule,CommonModule],
   templateUrl: './user-details.component.html',
   styleUrl: './user-details.component.scss'
 })
 export class UserDetailsComponent {
   user: UserProfile | null = null;
   selectedFiles: File[] = [];
+  editSection: string | null = null; 
+
   @Input() userId!: number;
   constructor(private userService: UserserviceService, private route: ActivatedRoute, private router: Router) { }
   ngOnInit() {
@@ -83,7 +86,7 @@ export class UserDetailsComponent {
         (response) => {
           console.log(`User ${userId} deleted successfully`);
           alert('User deleted successfully');
-          this.router.navigate(['']);
+          this.router.navigate(['user-list']);
          
         },
         (error) => {
@@ -91,5 +94,19 @@ export class UserDetailsComponent {
         }
       );
     }
+  }
+
+  startEdit(section: string) {
+    this.editSection = section;
+  }
+
+  cancelEdit() {
+    this.editSection = null;
+  }
+
+  saveSection(section: string) {
+    console.log('Saving section:', section, this.user);
+    // TODO: Call API to update this.user
+    this.editSection = null;
   }
 }
