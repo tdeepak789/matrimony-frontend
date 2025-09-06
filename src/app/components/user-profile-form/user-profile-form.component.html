@@ -1,169 +1,26 @@
 <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-  <div *ngIf="step === 0">
-    <label>
-    First Name
-    <input type="text" formControlName="firstName" />
-  </label>
-  <br>
-  <label>
-    Last Name
-    <input type="text" formControlName="lastName" />
-  </label>
-  <br>
-  <label>
-    Email
-    <input type="email" formControlName="email" />
-  </label>
-  <br>
-  <label>
-    Phone Number
-    <input type="tel" formControlName="phoneNumber" />
-  </label>
-  <br>
-  <label>
-    Password
-    <input type="password" formControlName="password" />
-  </label>
-  <br>
-  <label>
-    Date Of Birth
-    <input type="date" formControlName="dateOfBirth" />
-  </label>
-  <br>
-  <label>
-    Time Of Birth
-    <input type="time" formControlName="timeOfBirth" />
-  </label>
-  <br>
-  
-  <label >
-    gender
-    <select formControlName="gender">
-      <option value="">Select Gender</option>
-      <option *ngFor="let gender of genders" [value]="gender">{{gender}}</option>
-    </select>
-  </label>
-  <br>
-  <label for="">
-    bio
-    <input type="text" formControlName="bio">
-  </label>
-  <br>
-    <label>
-    motherTongue
-    <select formControlName="motherTongue">
-      <option value="">Select Language</option>
-      <option *ngFor="let r of languages" [value]="r">{{ r }}</option>
-    </select>
-  </label>
-<br>
-  <label >
-    height
-    <input type="number" formControlName="height">
-  </label>
-  <br>
-  <label>
-    maritalStatus
-    <select formControlName="maritalStatus">
-      <option value="">Select Marital Status</option>
-      <option *ngFor="let status of maritalStatuses" [value]="status">{{ status }}</option>
-    </select>
-  </label>
+  <h3>{{steps[step].label}}</h3>
+  <div *ngFor="let field of steps[step].fields">
+    <label>{{field.label}}</label>
 
-    <br>
-    <button type="button" (click)="nextStep()">Next</button>
-  </div>
-  
-  <div *ngIf="step === 1">
-    <label>
-    religion
-    <select formControlName="religion">
-      <option value="">Select religion</option>
-      <option *ngFor="let r of religions" [value]="r">{{ r }}</option>
-    </select>
-  </label>
-  <label>
-    caste
-    <input type="text" formControlName="caste">
-  </label>
-  <label for="">
-    subCaste
-    <input type="text" formControlName="subcaste">
-  </label>
-  <label for="">
-    gothram
-    <input type="text" formControlName="gothram">
-  </label>
-  <label for="">
-    star
-    <select formControlName="star">
-      <option value="">Select Star</option>
-      <option *ngFor="let s of star" [value]="s">{{ s }}</option>
-    </select>
-  </label>
-  <label for="">
-    rasi
-    <select formControlName="rasi">
-      <option value="">Select Rasi</option>
-      <option *ngFor="let r of rasi" [value]="r">{{ r }}</option>
-    </select>
-  </label>
+    <!-- Input -->
+    <input *ngIf="field.type !== 'select'" [type]="field.type" [formControlName]="field.name" [placeholder]="field.placeholder"/>
 
-    <button type="button" (click)="previousStep()">Previous</button>
-    <button type="button" (click)="nextStep()">Next</button>
+    <!-- Dropdown -->
+    <select *ngIf="field.type === 'select'" [formControlName]="field.name">
+      <option value="">Select {{field.label}}</option>
+      <option *ngFor="let option of metaOptions[field.name]" [value]="option">{{option}}</option>
+    </select>
+
+    <!-- Error -->
+    <div *ngIf="profileForm.get(field.name)?.touched && profileForm.get(field.name)?.invalid" style="color: red;">
+      {{field.label}} is required
+    </div>
   </div>
 
-  
-<div *ngIf="step === 2">
-  <label for="">
-    education
-    <input type="text" formControlName="education">
-  </label>
-
-  <label for="">
-    occupation
-    <input type="text" formControlName="occupation">
-  </label>
-
-  <label for="">
-    annualIncome
-    <input type="number" formControlName="income">
-  </label>
-    <button type="button" (click)="previousStep()">Previous</button>
-    <button type="button" (click)="nextStep()">Next</button>
-</div>
-  
-<div *ngIf="step === 3">
-  <label for="">
-    country
-    <select formControlName="country">
-      <option value="">Select Country</option>
-      <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
-    </select>
-  </label>
-  <label for="">
-    state
-    <select formControlName="state">
-      <option value="">Select State</option>
-      <option *ngFor="let s of states" [value]="s">{{ s }}</option>
-    </select>
-  </label>
-  <label for="">
-    city
-    <select formControlName="city">
-      <option value="">Select City</option>
-      <option *ngFor="let c of cities" [value]="c">{{ c }}</option>
-    </select>
-  </label>
-  <label for="">
-    work Location
-    <input type="text" formControlName="workLocation">
-  </label>
-    <button type="button" (click)="previousStep()">Previous</button>
-     <button type="submit">Submit</button>
-</div>
-  
-  
- 
-  <a routerLink="/user-list">cancel</a>
+  <div class="buttons">
+    <button type="button" (click)="previousStep()" [disabled]="step===0">Previous</button>
+    <button type="button" *ngIf="step < steps.length-1" (click)="nextStep()">Next</button>
+    <button type="submit" *ngIf="step === steps.length-1">Submit</button>
+  </div>
 </form>

@@ -5,6 +5,7 @@ import { UserserviceService } from '../../services/userservice.service';
 import { CommonModule } from '@angular/common';
 import { MetaDataResponse } from '../../models/MetaDataResponse';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-user-profile-form',
@@ -14,32 +15,79 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 })
 export class UserProfileFormComponent {
 
-  religions: string[] = [];
-  maritalStatuses: string[] =[];
-  languages: string[]=[];
-  countries: string[]=[];
-  states: string[]=[];
-  cities: string[]=[];
-  genders: string[]=[];
-  star: string[]=[];
-  rasi: string[]=[];
   selectedFiles: File[] = [];
   step = 0; 
   isEditMode = false;
   userId!: number;
+  metaOptions: { [key: string]: string[] } = {}
+
+  steps: FormStep[] = [
+  {
+    label: 'Basic Details',
+    controls: ['firstName','lastName','email','phoneNumber','password','dateOfBirth','timeOfBirth','gender','motherTongue','height'],
+    fields: [
+      { name: 'firstName', label: 'First Name', type: FieldType.Text, required: true, placeholder: "Enter your first name" },
+      { name: 'lastName', label: 'Last Name', type: FieldType.Text, required: true , placeholder: "Enter your Last name"},
+      { name: 'email', label: 'Email', type: FieldType.Email, required: true, placeholder:"example@mail.com" },
+      { name: 'phoneNumber', label: 'Phone Number', type: FieldType.Text, required: true , placeholder: "987 654" },
+      { name: 'password', label: 'Password', type: FieldType.Password, required: true , placeholder:"Type your password"},
+      { name: 'dateOfBirth', label: 'Date of Birth', type: FieldType.Date, required: true },
+      { name: 'timeOfBirth', label: 'Time Of Birth', type: FieldType.Time, required: true },
+      { name: 'gender', label: 'Gender', type: FieldType.Select,  required: true },
+      { name: 'height',label:'Height',type:FieldType.Number,required:true , placeholder:"In cms"},
+      { name: 'motherTongue', label: 'Mother Tongue', type: FieldType.Select, required: true },
+      { name: 'bio', label: 'Your Bio', type:FieldType.Text,placeholder:"Tell about your self"}
+    ]
+  },
+  {
+    label: 'Religious Details',
+    controls: ['religion','caste','subcaste','gothram','star','rasi'],
+    fields: [
+      { name: 'religion', label: 'Religion', type: FieldType.Select, required: true },
+      { name: 'caste', label: 'Caste', type:  FieldType.Text, placeholder: "Caste name" },
+      { name: 'subcaste', label: 'Subcaste', type:  FieldType.Text, placeholder: "optional"},
+      { name: 'gothram', label: 'Gothram', type:  FieldType.Text, placeholder:"optional" },
+      { name: 'star', label: 'Star', type: FieldType.Select },
+      { name: 'rasi', label: 'Rasi', type: FieldType.Select }
+    ]
+  },
+  {
+    label: 'Professional Details',
+    controls:['education', 'occupation','income'],
+    fields:[
+      {name:'education',label:'Education',type:FieldType.Text , placeholder:"Btech or Degree"},
+      {name:'occupation',label:'Occupation',type:FieldType.Text, placeholder: "Engineer or Doctor"},
+      {name:'income',label:'Income',type:FieldType.Number},
+      {name:'workLocation',label:'Work Location',type:FieldType.Text, placeholder: "Chennai or Bangalore"}
+    ]
+  },
+  {
+    label:'Address',
+    controls:['country','state','city'],
+    fields:[
+      {name:'country',label:'Country',type:FieldType.Select},
+      {name:'state',label:'State',type:FieldType.Select},
+      {name:'city',label:'City',type:FieldType.Select}
+    ]
+  }
+];
+
   
   ngOnInit() {
      this.userService.getMetaData().subscribe({
      next:( data:MetaDataResponse) => {
-        this.religions = data.religions;
-        this.maritalStatuses = data.maritalStatuses;
-        this.languages = data.languages;
-        this.countries = data.countries;
-        this.states = data.states;
-        this.cities = data.cities;
-        this.genders = data.genders;
-        this.star = data.star;
-        this.rasi = data.rasi;
+      this.metaOptions={
+        religion : data.religions,
+        maritalStatus : data.maritalStatuses,
+        motherTongue : data.languages,
+        country : data.countries,
+        state : data.states,
+        city : data.cities,
+        gender : data.genders,
+        star : data.star,
+        rasi : data.rasi
+      }
+        
         console.log('Fetched metadata:', data);
       },
       error: (error) => {
@@ -50,10 +98,9 @@ export class UserProfileFormComponent {
     this.userId = Number(this.route.snapshot.paramMap.get('userId'));
     if (this.userId) {
       this.isEditMode = true;
-      this.loadUserProfile(this.userId);
     }
   }
-  constructor(private userService: UserserviceService , private router:Router,private route: ActivatedRoute) {}
+  constructor(private userService: UserserviceService , private router:Router,private route: ActivatedRoute, private authService:AuthService) {}
   profileForm = new FormGroup({
     email: new FormControl('',  Validators.email),
     firstName: new FormControl('', Validators.required),
@@ -63,7 +110,7 @@ export class UserProfileFormComponent {
     timeOfBirth: new FormControl('', Validators.required),
     gender: new FormControl('', Validators.required),
     bio: new FormControl(''),
-    height: new FormControl(0),
+    height: new FormControl(null,[Validators.required,Validators.min(1)]),
     maritalStatus: new FormControl(''),
     religion: new FormControl(''),
     caste: new FormControl(''),
@@ -79,7 +126,7 @@ export class UserProfileFormComponent {
     state: new FormControl(''),
     city: new FormControl(''),
     motherTongue: new FormControl(''),
-    phoneNumber: new FormControl(0,[Validators.required])
+    phoneNumber: new FormControl(null,[Validators.required,Validators.minLength(5)])
   });
   onFileChange(event: any) {
     const files: FileList = event.target.files;
@@ -93,8 +140,16 @@ export class UserProfileFormComponent {
     }
   }
 
-   nextStep() {
-    this.step++;
+  nextStep() {
+    const controls = this.steps[this.step].controls;
+    let valid = true;
+    for (let ctrl of controls) {
+      if (this.profileForm.get(ctrl)?.invalid) {
+        this.profileForm.get(ctrl)?.markAsTouched();
+        valid = false;
+      }
+    }
+    if (valid) this.step++;
   }
 
   previousStep() {
@@ -137,7 +192,8 @@ export class UserProfileFormComponent {
           (response) => {
             console.log('User profile added successfully:', response);
             this.profileForm.reset();
-            this.router.navigate(['user-details', response.id]);
+            this.authService.saveToken(response.token);
+            this.router.navigate(['user-details', response.userId]);
           },
           (error) => {
             console.error('Error adding user profile:', error);
@@ -169,35 +225,34 @@ export class UserProfileFormComponent {
       console.error('Form is invalid', invalidFields);
     }
   }
+}
 
-  loadUserProfile(id: number) {
-    this.userService.getUserProfileById(id).subscribe(user => {
-      this.profileForm.patchValue({
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        dateOfBirth: user.dateOfBirth.split('T')[0],
-        timeOfBirth: new Date(user.dateOfBirth).toISOString().substring(11,16),
-        gender: user.gender,
-        bio: user.bio,
-        height: user.height,
-        maritalStatus: user.maritalStatus,
-        religion: user.religion,
-        caste: user.caste,
-        subcaste: user.subcaste,
-        gothram: user.gothram,
-        star: user.star,
-        rasi: user.rasi,
-        education: user.education,
-        occupation: user.occupation,
-        income: user.income,
-        workLocation: user.workLocation,
-        country: user.country,
-        state: user.state,
-        city: user.city,
-        motherTongue: user.motherTongue,
-        phoneNumber: user.phoneNumber
-      });
-    });
-  }
+interface FormStep {
+  label: string;
+  controls: string[];        // list of formControlNames in this step
+  fields: FieldConfig[];     // metadata for each field
+}
+
+interface FieldConfig {
+  name: string;
+  label: string;
+  type: FieldType;
+  options?: string[];        // for dropdowns
+  required?: boolean;
+  placeholder?: string;
+}
+
+
+export enum FieldType {
+  Text = 'text',
+  Email = 'email',
+  Password = 'password',
+  Number = 'number',
+  Date = 'date',
+  Time = 'time',
+  Select = 'select',
+  Radio = 'radio',
+  Checkbox = 'checkbox',
+  TextArea = 'textarea',
+  File = 'file'
 }

@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 export class AuthService {
   private apiUrl = 'http://localhost:5145/api/auth'; // your backend URL
   private tokenKey = 'authToken';
+  private userId = 'userId';
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -24,10 +25,16 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userId);
     this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  saveUserId(id:number)
+  {
+    localStorage.setItem(this.userId,id+"");
   }
 }
