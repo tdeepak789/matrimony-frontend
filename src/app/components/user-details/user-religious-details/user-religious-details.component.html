@@ -1,0 +1,48 @@
+<div class="card">
+  <h3>Religious Details</h3>
+
+  <div *ngIf="!editing; else editTpl">
+    <p><strong>Religion:</strong> {{ user.religion }}</p>
+    <p><strong>Caste:</strong> {{ user.caste }}</p>
+    <p><strong>Subcaste:</strong> {{ user.subcaste }}</p>
+    <p><strong>Gothram:</strong> {{ user.gothram }}</p>
+    <p><strong>Star:</strong> {{ user.star }}</p>
+    <p><strong>Rasi:</strong> {{ user.rasi }}</p>
+    <button *ngIf="canEdit"  (click)="onEdit()">Edit</button>
+  </div>
+
+  <ng-template #editTpl>
+    <form [formGroup]="form" (ngSubmit)="onSave()">
+      <label>
+        Religion:
+        <select formControlName="religion">
+          <option value="">Select Religion</option>
+          <option *ngFor="let r of metaOptions?.religions" [value]="r">{{ r }}</option>
+        </select>
+      </label>
+      <label>Caste <input formControlName="caste" /></label>
+      <label>Subcaste <input formControlName="subcaste" /></label>
+      <label>Gothram <input formControlName="gothram" /></label>
+      <label>
+        Star:
+        <select formControlName="star">
+          <option value="">Select Star</option>
+          <option *ngFor="let s of metaOptions?.star" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+
+      <label>
+        Rasi:
+        <select formControlName="rasi">
+          <option value="">Select Rasi</option>
+          <option *ngFor="let r of metaOptions?.rasi" [value]="r">{{ r }}</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="onCancel()">Cancel</button>
+      </div>
+    </form>
+  </ng-template>
+</div>

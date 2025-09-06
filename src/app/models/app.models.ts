@@ -1,9 +1,9 @@
 export interface UserProfile {
-  id?: number;
+  id: number;
   email: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;   // ISO string from API (e.g., 2025-08-26T16:35:32.373Z)
+  dateOfBirth: string;   
   gender: string;
   bio: string;
   createdAt: string;

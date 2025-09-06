@@ -1,0 +1,25 @@
+<div class="card">
+  <h3>Professional Details</h3>
+
+  <div *ngIf="!editing; else editTpl">
+    <p><strong>Education:</strong> {{ user.education }}</p>
+    <p><strong>Occupation:</strong> {{ user.occupation }}</p>
+    <p><strong>Income:</strong> {{ user.income }}</p>
+    <p><strong>Work Location:</strong> {{ user.workLocation }}</p>
+    <button  *ngIf="canEdit" (click)="onEdit()">Edit</button>
+  </div>
+
+  <ng-template #editTpl>
+    <form [formGroup]="form" (ngSubmit)="onSave()">
+      <label>Education <input formControlName="education" /></label>
+      <label>Occupation <input formControlName="occupation" /></label>
+      <label>Income <input type="number" formControlName="income" /></label>
+      <label>Work Location <input formControlName="workLocation" /></label>
+
+      <div class="actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="onCancel()">Cancel</button>
+      </div>
+    </form>
+  </ng-template>
+</div>

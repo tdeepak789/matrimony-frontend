@@ -1,112 +1,124 @@
-import { Component, Input } from '@angular/core';
-import { UserProfile } from '../../models/app.models';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { UserserviceService } from '../../services/userservice.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { UserProfile } from '../../models/app.models';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { UserBasicDetailsComponent } from './user-basic-details/user-basic-details.component';
+import { UserReligiousDetailsComponent } from './user-religious-details/user-religious-details.component';
+import { UserProfessionalDetailsComponent } from './user-professional-details/user-professional-details.component';
+import {  UserAddressDetailsComponent  } from './user-address-details/user-address-details.component';
+import { MetaDataResponse } from '../../models/MetaDataResponse';
+import { AuthService } from '../../auth.service';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-user-details',
-  imports: [DatePipe, RouterLink,FormsModule,CommonModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    UserBasicDetailsComponent,
+    UserReligiousDetailsComponent,
+    UserProfessionalDetailsComponent,
+    UserAddressDetailsComponent
+  ],
   templateUrl: './user-details.component.html',
-  styleUrl: './user-details.component.scss'
+  styleUrls: ['./user-details.component.scss']
 })
 export class UserDetailsComponent {
   user: UserProfile | null = null;
-  selectedFiles: File[] = [];
-  editSection: string | null = null; 
+  // which section currently being edited (key names: 'basic','religious','professional','address')
+  editSection: string | null = null;
+  metaOptions: MetaDataResponse = {} as MetaDataResponse;
+  constructor(
+    private userService: UserserviceService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private auth:AuthService
+  ) {}
 
-  @Input() userId!: number;
-  constructor(private userService: UserserviceService, private route: ActivatedRoute, private router: Router) { }
   ngOnInit() {
-    let idToUse: number | null = null;
+    // support loading by route param userId OR fetch current user
+    const idFromRoute = this.route.snapshot.paramMap.get('userId');
+    if (idFromRoute) {
+      const id = Number(idFromRoute);
+      this.userService.getUserProfileById(id).subscribe({ next: u => this.user = u });
+    } 
 
-    if (this.userId) {
-      idToUse = this.userId; // parent passed
-    } else {
-      const idFromRoute = this.route.snapshot.paramMap.get('userId');
-      if (idFromRoute) idToUse = +idFromRoute; // from URL
-    }
-    if (idToUse) {
-      // fetch single user
-      this.userService.getUserProfileById(idToUse).subscribe(
-        (user: UserProfile) => {
-          this.user = user; // wrap in array to reuse template
-          console.log('Fetched specific user profile:', user);
-        },
-        (error) => {
-          console.error('Error fetching user profile:', error);
-        }
-      );
-    }
-  }
-  onFileChange(event: any, id: any) {
-    const files: FileList = event.target.files;
-    console.log('Selected user to file upload', id);
-    if (files.length > 3) {
-      alert("You can upload up to 3 pictures only.");
-      return;
-    }
-    this.selectedFiles = [];
-    for (let i = 0; i < files.length; i++) {
-      this.selectedFiles.push(files[i]);
-    }
+     this.route.paramMap
+      .pipe(
+        switchMap(params => {
+          const id = Number(params.get('userId'));
+          return this.userService.getUserProfileById(id);
+        })
+      )
+      .subscribe({
+        next: user => this.user = user,
+        error: err => console.error(err)
+      });
+    // else {
+    //   this.userService.getCurrentUser().subscribe({ next: u => this.user = u });
+    // }
+    this.userService.getMetaData().subscribe({
+      next: meta => this.metaOptions = meta,
+      error: err => console.error(err)
+    });
   }
 
-  onPhotoSubmit(userId: any) {
-    if (this.selectedFiles.length === 0) {
+  startEdit(section: string) { this.editSection = section; }
+  cancelEdit() { this.editSection = null; }
 
-      return;
-    }
-    if (this.selectedFiles.length > 3) {
-      alert("You can upload up to 3 pictures only.");
-      return;
-    }
-    this.userService.uploadUserPhotos(this.selectedFiles, userId).subscribe(
-      (response) => {
-        console.log('User profile added successfully:', response);
-        this.router.navigate(['user-details', userId]);
-        alert(`Photos uploaded successfully! ${response}`);
+  // children emit Partial<UserProfile> containing only changed fields
+  saveSection(patch: Partial<UserProfile>) {
+    if (!this.user) return;
+    const merged: UserProfile = { ...this.user, ...patch };
 
+    // id is required as per your model
+    this.userService.updateUserProfile(merged.id, merged).subscribe({
+      next: updated => {
+        this.user = updated;
+        this.editSection = null;
       },
-      (error) => {
-        console.error('Error adding user profile:', error);
+      error: err => {
+        console.error('Update failed', err);
+        // optionally show toast / error message
       }
-    );
-    // Handle form submission logic here
-    console.log('Selected files:', this.selectedFiles);
+    });
   }
 
-  getFileUrl(userId: any): string {
-    return `http://localhost:5145/api/File/download/${userId}`;;
-  }
-  deleteUser(userId: any) {
-    if (confirm('Are you sure you want to delete this user?')) {
-      this.userService.deleteUserProfile(userId).subscribe(
-        (response) => {
-          console.log(`User ${userId} deleted successfully`);
-          alert('User deleted successfully');
-          this.router.navigate(['user-list']);
-         
-        },
-        (error) => {
-          console.error('Error deleting user:', error);
-        }
-      );
-    }
+  // photo upload helpers
+  selectedFiles: File[] = [];
+  onFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    const files = Array.from(input.files);
+    if (files.length > 3) { alert('Max 3 photos'); return; }
+    this.selectedFiles = files;
   }
 
-  startEdit(section: string) {
-    this.editSection = section;
+  onPhotoSubmit() {
+    if (!this.user || this.selectedFiles.length === 0) return;
+    this.userService.uploadUserPhotos(this.selectedFiles, this.user.id).subscribe({
+      next: () => {
+        alert('Uploaded');
+        // refresh user or images if needed
+      },
+      error: err => console.error(err)
+    });
   }
 
-  cancelEdit() {
-    this.editSection = null;
+  deleteUser() {
+    if (!this.user) return;
+    if (!confirm('Delete user?')) return;
+    this.userService.deleteUserProfile(this.user.id).subscribe({
+      next: () => this.router.navigate(['/user-list']),
+      error: err => console.error(err)
+    });
   }
 
-  saveSection(section: string) {
-    console.log('Saving section:', section, this.user);
-    // TODO: Call API to update this.user
-    this.editSection = null;
+  canEdit(profileUserId: number): boolean {
+    const currentUserId = this.auth.getUserId();
+    return this.auth.isAdmin() || currentUserId === profileUserId;
   }
+
 }

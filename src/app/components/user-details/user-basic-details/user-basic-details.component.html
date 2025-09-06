@@ -1,0 +1,57 @@
+<div class="card">
+  <h3>Basic Details</h3>
+
+  <div *ngIf="!editing; else editTpl">
+    <p><strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</p>
+    <p ><strong>DOB:</strong> {{ user.dateOfBirth | date:'yyyy-MM-dd hh:mm' }}</p>
+    <p><strong>Gender:</strong> {{ user.gender }}</p>
+    <p><strong>Height:</strong> {{ user.height }}</p>
+    <p><strong>Bio:</strong> {{ user.bio }}</p>
+    <p><strong>Marital Status:</strong> {{ user.maritalStatus }}</p>
+    <p><strong>Mother Tongue:</strong> {{ user.motherTongue }}</p>
+    <p *ngIf="canEdit" ><strong>Email:</strong> {{ user.email }}</p>
+    <p *ngIf="canEdit" ><strong>Phone:</strong> {{ user.phoneNumber }}</p>
+
+    <button *ngIf="canEdit"  (click)="onEdit()">Edit</button>
+  </div>
+
+  <ng-template #editTpl>
+    <form [formGroup]="form" (ngSubmit)="onSave()">
+      <label>First name <input formControlName="firstName" /></label>
+      <div *ngIf="form.get('firstName')?.touched && form.get('firstName')?.invalid" style="color:red">Required</div>
+
+      <label>Last name <input formControlName="lastName" /></label>
+      <div *ngIf="form.get('lastName')?.touched && form.get('lastName')?.invalid" style="color:red">Required</div>
+      <label>DOB <input type="datetime-local" formControlName="dateOfBirth" /></label>
+      <label>Gender 
+        <select formControlName="gender">
+          <option value="">Select Gender</option>
+          <option *ngFor="let l of metaOptions?.genders" [value]="l">{{l}}</option>
+        </select>
+      </label>
+      <label>Height <input type="number" formControlName="height" /></label>
+      <label>Bio <input formControlName="bio" /></label>
+      <label>Marital Status
+        <select formControlName="maritalStatus">
+          <option value="">--Select--</option>
+          <option *ngFor="let l of metaOptions?.maritalStatuses" [value]="l">{{l}}</option>
+        </select>
+      </label>
+      <label>
+        Mother Tongue:
+        <select formControlName="motherTongue">
+          <option value="">Select Language</option>
+          <option *ngFor="let language of metaOptions?.languages" [value]="language">{{ language }}</option>
+        </select>
+      </label>
+      <label>Email <input formControlName="email" /></label>
+      <div *ngIf="form.get('email')?.touched && form.get('email')?.invalid" style="color:red">Invalid email</div>
+      <label>Phone <input formControlName="phoneNumber" /></label>
+
+      <div class="actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="onCancel()">Cancel</button>
+      </div>
+    </form>
+  </ng-template>
+</div>

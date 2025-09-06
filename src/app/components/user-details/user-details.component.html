@@ -1,118 +1,68 @@
-<p>user-details works!</p>
+<div *ngIf="user; else loading">
+  <h1>{{ user.firstName }} {{ user.lastName }}</h1>
 
-@if (user)
-{
-    <div>
-        <ul>
-            <li>
-               
-                    <img [src]="getFileUrl(user.id)"
-                        alt="User Photo"
-                        width="100" height="100" />
-                  
-            </li>
-            <li>
-                <div>
-                    <form  enctype="multipart/form-data">
-                        <label>
-                            Upload Pictures (Max 3)
-                            <input type="file" name="photos" (change)="onFileChange($event,user.id)" accept="image/*" multiple />
-                        </label>
+  <!-- Photo block -->
+  <div >
+    <img [src]="'http://localhost:5145/api/File/download/' + user.id" alt="avatar" width="120" height="120" />
+    <div *ngIf="canEdit(user.id)">
 
-                        <button type="button" (click)="onPhotoSubmit(user.id)">Submit</button>
-                    </form>
-
-                </div>
-            </li>
-
-            <div>
-                <h5>Basic Details</h5>
-                     <div *ngIf="editSection !== 'basic'">
-                        <li>Full Name: {{user.firstName}} {{user.lastName}}</li>
-                        <li>Date of Birth: {{ user.dateOfBirth | date:'yyyy-MM-dd' }}</li>
-                        <li>Time of Birth: {{ user.dateOfBirth | date:'HH:mm' }}</li>
-                        <li>Gender: {{user.gender}}</li>
-                        <li>Height: {{user.height}}</li>
-                        <li>Marital Status: {{user.maritalStatus}}</li>
-                        <li>Bio: {{user.bio}}</li>
-                        <li>Mother Tongue: {{user.motherTongue}}</li>
-                        <li>Phone Number: {{user.phoneNumber}}</li>
-                        <button (click)="startEdit('basic')">Edit</button>
-                        </div>
-
-                        <div *ngIf="editSection === 'basic'">
-                        FirstName:
-                        <input [(ngModel)]="user.firstName" placeholder="First Name" />
-                        lastName
-                        <input [(ngModel)]="user.lastName" placeholder="Last Name" />
-                        Date Of Birth:
-                        <input [(ngModel)]="user.dateOfBirth" type="date" />
-                        Gender:
-                        <input [(ngModel)]="user.gender" placeholder="Gender" />
-                        Height:
-                        <input [(ngModel)]="user.height" placeholder="Height" />
-                        Marital Status
-                        <input [(ngModel)]="user.maritalStatus" placeholder="Marital Status" />
-                        Bio
-                        <input [(ngModel)]="user.bio" placeholder="Bio" />
-                        Mother Tongue:
-                        <input [(ngModel)]="user.motherTongue" placeholder="Mother Tongue" />
-                        Phone Number
-                        <input [(ngModel)]="user.phoneNumber" placeholder="Phone Number" />
-                        <button (click)="saveSection('basic')">Save</button>
-                        <button (click)="cancelEdit()">Cancel</button>
-                        </div>
-                    </div>
-            <div>
-                <h5>Religious Details</h5>
-                <div *ngIf="editSection !=='Religious'">
-                    
-                    <li>Religion      : {{user.religion}}</li>
-                    <li>Caste         : {{user.caste}}</li>
-                    <li>Gothram       : {{user.gothram}}</li>
-                    <li>Rasi : {{user.rasi}}</li>
-                    <li>Star : {{user.star}}</li>
-                    <button (click)="startEdit('Religious')">Edit</button>
-                </div>
-                <div *ngIf="editSection ==='Religious'" >
-                    <button (click)="cancelEdit()">Cancel</button>
-                </div>
-                    
-            </div>
-            <div>
-                <h5>Professional Details</h5>
-                <div *ngIf="editSection !=='Professional'">
-                    <li>Employed In   : {{user.occupation}}</li>
-                    <li>Income        : {{user.income}}</li>
-                    <li>Work Location : {{user.workLocation}}</li>
-                    <li>Education     : {{user.education}}</li>
-                    <button (click)="startEdit('Professional')">Edit</button>
-                </div>
-                <div *ngIf="editSection ==='Professional'">
-                    <button (click)="cancelEdit()">Cancel</button>
-                </div>
-                    
-            </div>
-            <div>
-                <h5>Addres Details</h5>
-                <div *ngIf="editSection !=='Address'">
-                    <li>City : {{user.city}}</li>
-                    <li>State: {{user.state}}</li>
-                    <li>Country: {{user.country}}</li>
-                    <button (click)="startEdit('Address')">Edit</button>
-                </div>
-                <div *ngIf="editSection === 'Address'">
-                    <button (click)="cancelEdit()">Cancel</button>
-                </div>
-            </div>            
-        </ul>
-        <a [routerLink]="['/user-edit', user.id]">Edit</a>
-        <form >
-           <button type="button" (click)="deleteUser(user.id)">Delete</button>
-        </form>
+    
+    <input type="file" (change)="onFileChange($event)" accept="image/*" multiple />
+    <button (click)="onPhotoSubmit()">Upload Photos</button>
+    <button (click)="deleteUser()">Delete Account</button>
     </div>
+  </div>
 
-}
-    
-    
-    
+  <!-- Sections -->
+  <section class="section">
+    <user-basic-details
+      [user]="user"
+      [editing]="editSection === 'basic'"
+      (enterEdit)="startEdit('basic')"
+      (cancelEdit)="cancelEdit()"
+      (save)="saveSection($event)"
+      [metaOptions]="metaOptions"
+      [canEdit]="canEdit(user.id)" >
+    </user-basic-details>
+  </section>
+
+  <section class="section">
+    <user-religious-details
+      [user]="user"
+      [editing]="editSection === 'religious'"
+      (enterEdit)="startEdit('religious')"
+      (cancelEdit)="cancelEdit()"
+      (save)="saveSection($event)"
+      [metaOptions]="metaOptions"
+      [canEdit]="canEdit(user.id)" >
+    </user-religious-details>
+  </section>
+
+  <section class="section">
+    <user-professional-details
+      [user]="user"
+      [editing]="editSection === 'professional'"
+      (enterEdit)="startEdit('professional')"
+      (cancelEdit)="cancelEdit()"
+      (save)="saveSection($event)"
+      [metaOptions]="metaOptions"
+      [canEdit]="canEdit(user.id)" >
+    </user-professional-details>
+  </section>
+
+  <section class="section">
+    <user-address-details
+      [user]="user"
+      [editing]="editSection === 'address'"
+      (enterEdit)="startEdit('address')"
+      (cancelEdit)="cancelEdit()"
+      (save)="saveSection($event)"
+      [metaOptions]="metaOptions"
+      [canEdit]="canEdit(user.id)" >
+    </user-address-details>
+  </section>
+</div>
+
+<ng-template #loading>
+  <p>Loading...</p>
+</ng-template>

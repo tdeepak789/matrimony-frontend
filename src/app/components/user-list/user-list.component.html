@@ -59,9 +59,8 @@
         </ul>
         <a [routerLink]="['/user-details', user.id]">View Details</a>
             <br>
-        <a [routerLink]="['/user-edit', user.id]">Edit</a>
         <form >
-            <button type="button" (click)="deleteUser(user.id)">Delete</button>
+            <button *ngIf="auth.isAdmin()" type="button" (click)="deleteUser(user.id)">Delete</button>
         </form>
     </div>
     <hr>

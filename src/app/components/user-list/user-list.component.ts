@@ -5,6 +5,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MetaDataResponse } from '../../models/MetaDataResponse';
+import { AuthService } from '../../auth.service';
 
 
 @Component({
@@ -34,7 +35,7 @@ export class UserListComponent {
   rasi: string[]=[];
   caste: string[]=[];
 
-  constructor(private userService: UserserviceService, private router: Router) {}
+  constructor(private userService: UserserviceService, private router: Router,public auth:AuthService) {}
 
   ngOnInit() {
     this.userService.getUsersProfiles().subscribe(

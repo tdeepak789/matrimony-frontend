@@ -1,0 +1,38 @@
+<div class="card">
+  <h3>Address</h3>
+
+  <div *ngIf="!editing; else editTpl">
+    <p><strong>City:</strong> {{ user.city }}</p>
+    <p><strong>State:</strong> {{ user.state }}</p>
+    <p><strong>Country:</strong> {{ user.country }}</p>
+    <button *ngIf="canEdit"  (click)="onEdit()">Edit</button>
+  </div>
+
+  <ng-template #editTpl>
+    <form [formGroup]="form" (ngSubmit)="onSave()">
+      <label>Country 
+        <select formControlName="country">
+          <option value="">Select Country</option>
+          <option *ngFor="let l of metaOptions?.countries" [value]="l">{{l}}</option>
+        </select>
+      </label>
+      <label>State 
+        <select formControlName="state">
+          <option value="">Select State</option>
+          <option *ngFor="let l of metaOptions?.states" [value]="l">{{l}}</option>
+        </select>
+      </label>
+      <label>City 
+        <select formControlName="city">
+          <option value="">Select City</option>
+          <option *ngFor="let l of metaOptions?.cities" [value]="l">{{l}}</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Save</button>
+        <button type="button" (click)="onCancel()">Cancel</button>
+      </div>
+    </form>
+  </ng-template>
+</div>
