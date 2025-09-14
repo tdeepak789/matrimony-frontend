@@ -32,6 +32,15 @@
     <option *ngFor="let m of maritalStatuses" [value]="m">{{ m }}</option>
   </select>
 </label>
+
+<div class="interest-toggle" *ngIf="showInterests">
+  <button (click)="setInterestView('byUser')" [class.active]="interestView === 'byUser'">
+    Profiles Interested By You
+  </button>
+  <button (click)="setInterestView('inUser')" [class.active]="interestView === 'inUser'">
+    Profiles Interested In You
+  </button>
+</div>
 @for ( user of filteredUsers(); track $index) {
     <hr>
     <div>
@@ -59,6 +68,18 @@
         </ul>
         <a [routerLink]="['/user-details', user.id]">View Details</a>
             <br>
+        <form >
+              <button
+                *ngIf="auth.isLoggedIn() && !auth.isAdmin()"
+                type="button"
+                (click)="
+                  isUserInterested(user.id)
+                    ? removeUserFromInterestedProfile(user.id)
+                    : addUserToInterestedProfile(user.id)
+                ">
+                {{ isUserInterested(user.id) ? 'Remove from interested profiles' : 'Add to interested profiles' }}
+              </button>
+        </form>
         <form >
             <button *ngIf="auth.isAdmin()" type="button" (click)="deleteUser(user.id)">Delete</button>
         </form>

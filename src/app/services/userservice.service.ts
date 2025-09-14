@@ -8,6 +8,7 @@ import { MetaDataResponse } from '../models/MetaDataResponse';
   providedIn: 'root'
 })
 export class UserserviceService {
+  
   deleteUserProfile(userId: number) {
     return this.http.delete<any>(`${this.apiUrl}/User/profiles/${userId}`);
   }
@@ -47,5 +48,17 @@ export class UserserviceService {
       formData.append('files', file, file.name);
     });
     return this.http.post<any>(`${this.apiUrl}/File/upload/${userId}`, formData);
+  }
+
+  addUserToInterestedProfile(userId:number, userProfileId:number):Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/Interests/${userId}/${userProfileId}`,null);
+  }
+
+  getInterestedProfiles(userId:number) {
+
+    return this.http.get<any>(`${this.apiUrl}/Interests/${userId}`);
+  }
+  removeUserFromInterestedProfile(userId:number, userProfileId:number) {
+    return this.http.delete<any>(`${this.apiUrl}/Interests/${userId}/${userProfileId}`);
   }
 }

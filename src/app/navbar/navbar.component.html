@@ -15,6 +15,9 @@
     <!-- <li *ngIf="auth.isLoggedIn()" ><a routerLink="/user-details/{userId}" >Profile</a></li>  -->
      <li *ngIf="auth.isLoggedIn()"> <a routerLink="/user-profile">Create New Profile</a></li>
      <li *ngIf="auth.isLoggedIn()"><a [routerLink]="['/user-details',auth.getUserId()]">My Profile</a></li>
+     <li *ngIf="auth.isLoggedIn()">
+      <a routerLink="/user-interests">User Interests</a>
+    </li>
     </ul>
     <hr>
     <hr>

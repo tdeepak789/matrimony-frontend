@@ -3,7 +3,7 @@ import { UserProfile } from '../../models/app.models';
 import { UserserviceService } from '../../services/userservice.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MetaDataResponse } from '../../models/MetaDataResponse';
 import { AuthService } from '../../auth.service';
 
@@ -35,7 +35,16 @@ export class UserListComponent {
   rasi: string[]=[];
   caste: string[]=[];
 
-  constructor(private userService: UserserviceService, private router: Router,public auth:AuthService) {}
+  showInterests:boolean=false;
+
+  interestedUserProfiles: UserProfile[]=[];
+  profilesInterestedInUser: UserProfile[]=[];
+  interestView: 'byUser' | 'inUser' = 'byUser';
+
+  setInterestView(view: 'byUser' | 'inUser') {
+    this.interestView = view;
+  }
+  constructor(private userService: UserserviceService, private router: Router,public auth:AuthService,private route: ActivatedRoute ) {}
 
   ngOnInit() {
     this.userService.getUsersProfiles().subscribe(
@@ -65,6 +74,22 @@ export class UserListComponent {
             console.error('Error fetching metadata:', error);
           }
       });
+      this.route.url.subscribe(urlSegments => {
+        const isInterests = urlSegments.some(seg => seg.path === 'user-interests');
+        this.showInterests = isInterests;
+      });
+      this.userService.getInterestedProfiles(this.auth.getUserId()).subscribe(
+        (response:any)=>
+        {
+          this.interestedUserProfiles = response?.profilesInterestedByUser;
+          this.profilesInterestedInUser = response?.profilesInterestedInUser;
+        },
+        (error:any)=>
+        {
+          console.error('Error fetching user interests profiles:', error);
+        }
+          
+      );
   }
 
   onFileChange(event: any, id:any) {
@@ -105,7 +130,9 @@ export class UserListComponent {
     return `http://localhost:5145/api/File/download/${userId}`; ;
   }
   filteredUsers(): UserProfile[] {
-    let filtered = this.users;
+    let filtered = this.showInterests
+  ?(this.interestView === 'byUser')?this.interestedUserProfiles ?? []: this.profilesInterestedInUser ?? []
+  : this.users;
 
     if (this.searchText) {
       const search = this.searchText.toLowerCase();
@@ -148,4 +175,52 @@ export class UserListComponent {
       );
     }
   }
+
+  addUserToInterestedProfile(userId: any)
+  {
+    this.userService.addUserToInterestedProfile(this.auth.getUserId(),userId).subscribe(
+      (response)=>
+      {
+        console.log(`User added to interested to profile success fully`);
+      },
+      (error)=>
+      {
+        console.error("Error while adding user to interested profiles");
+      }
+    );
+  }
+  isUserInterested(userId: number): boolean {
+    return (this.interestedUserProfiles ?? []).some(u => u.id === userId);
+  }
+
+  removeUserFromInterestedProfile(userId: number) {
+    this.userService.removeUserFromInterestedProfile(this.auth.getUserId(), userId).subscribe(
+      (response) => {
+        // Remove user from local array for instant UI update
+          this.userService.getInterestedProfiles(this.auth.getUserId()).subscribe(
+          (response:any)=>
+          {
+            this.interestedUserProfiles = response?.profilesInterestedByUser;
+            this.profilesInterestedInUser = response?.profilesInterestedInUser;
+          },
+          (error:any)=>
+          {
+            console.error('Error fetching user interests profiles:', error);
+          }
+            
+        );
+        console.log('User removed from interested profiles');
+      },
+      (error) => {
+        console.error('Error removing user from interested profiles', error);
+      }
+    );
+  }
+  UpdateShowInterests()
+  {
+    this.showInterests = !this.showInterests;
+  }
+  trackByUserId(index: number, user: UserProfile) {
+  return user.id;
+}
 }

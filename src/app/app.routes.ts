@@ -9,5 +9,7 @@ export const routes: Routes = [
   { path: 'user-profile', component: UserProfileFormComponent},
   { path: 'user-details/:userId', component: UserDetailsComponent},
   { path: 'user-edit/:userId', component: UserProfileFormComponent},
-  { path: 'login',component: LoginComponent}
+  { path: 'login',component: LoginComponent},
+  { path: 'user-interests', component: UserListComponent }, // Reuse component
+
 ];
