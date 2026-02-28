@@ -206,7 +206,8 @@ export class UserListComponent {
     return (this.interestedUserProfiles ?? []).some(u => u.id === userId);
   }
 
-  removeUserFromInterestedProfile(userId: number) {
+  removeUserFromInterestedProfile(userId: number) 
+  {
     this.userService.removeUserFromInterestedProfile(this.auth.getUserId(), userId).subscribe(
       (response) => {
         // Remove user from local array for instant UI update
@@ -234,6 +235,20 @@ export class UserListComponent {
     this.showInterests = !this.showInterests;
   }
   trackByUserId(index: number, user: UserProfile) {
-  return user.id;
-}
+     return user.id;
+  }
+
+  calculateAge(birthDate: string | Date): number {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    // Adjust if the birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
 }
