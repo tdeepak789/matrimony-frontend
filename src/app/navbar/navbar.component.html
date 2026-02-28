@@ -1,24 +1,28 @@
-<p>navbar works!</p>
-<div>
-    <!-- Show Logout when logged in -->
-    <button 
-      *ngIf="auth.isLoggedIn()" 
-      (click)="logout()" 
-     >
-      Logout
-    </button>
-    <ul>
-      <!-- Show Login when not logged in -->
-    <li *ngIf="!auth.isLoggedIn() && isLoginPage()" ><a routerLink="/user-profile" >Register User</a></li>
-    <li *ngIf="!auth.isLoggedIn() && isCreateUserProfilePage()" ><a routerLink="/login" >Login</a></li> 
-    <li *ngIf="auth.isLoggedIn()" ><a routerLink="/user-list" >Explore Profiles</a></li>
-    <!-- <li *ngIf="auth.isLoggedIn()" ><a routerLink="/user-details/{userId}" >Profile</a></li>  -->
-     <!-- <li *ngIf="auth.isLoggedIn()"> <a routerLink="/user-profile">Create New Profile</a></li> -->
-     <li *ngIf="auth.isLoggedIn()"><a [routerLink]="['/user-details',auth.getUserId()]">My Profile</a></li>
-     <li *ngIf="auth.isLoggedIn()">
-      <a routerLink="/user-interests">Interested profiles</a>
-    </li>
-    </ul>
-    <hr>
-    <hr>
-  </div>
+<mat-toolbar color="primary">
+  <span class="logo">MatrimonyWeb</span>
+  <span class="spacer"></span>
+
+  <!-- desktop links -->
+  <nav class="desktop-links">
+    <a mat-button *ngIf="!auth.isLoggedIn() && isLoginPage()" routerLink="/user-profile">Register</a>
+    <a mat-button *ngIf="!auth.isLoggedIn() && isCreateUserProfilePage()" routerLink="/login">Login</a>
+    <a mat-button *ngIf="auth.isLoggedIn()" routerLink="/user-list">Explore</a>
+    <a mat-button *ngIf="auth.isLoggedIn()" [routerLink]="['/user-details', auth.getUserId()]">My Profile</a>
+    <a mat-button *ngIf="auth.isLoggedIn()" routerLink="/user-interests">Interests</a>
+    <button mat-button *ngIf="auth.isLoggedIn()" (click)="logout()">Logout</button>
+  </nav>
+
+  <!-- mobile menu button -->
+  <button mat-icon-button [matMenuTriggerFor]="menu" class="mobile-toggle">
+    <mat-icon>menu</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item *ngIf="!auth.isLoggedIn() && isLoginPage()" routerLink="/user-profile">Register</button>
+  <button mat-menu-item *ngIf="!auth.isLoggedIn() && isCreateUserProfilePage()" routerLink="/login">Login</button>
+  <button mat-menu-item *ngIf="auth.isLoggedIn()" routerLink="/user-list">Explore</button>
+  <button mat-menu-item *ngIf="auth.isLoggedIn()" [routerLink]="['/user-details', auth.getUserId()]">My Profile</button>
+  <button mat-menu-item *ngIf="auth.isLoggedIn()" routerLink="/user-interests">Interests</button>
+  <button mat-menu-item *ngIf="auth.isLoggedIn()" (click)="logout()">Logout</button>
+</mat-menu>

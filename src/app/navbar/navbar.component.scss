@@ -1,0 +1,13 @@
+.spacer { flex: 1 1 auto; }
+.toolbar-divider { height: 4px; background-color: rgba(0,0,0,0.1); }
+mat-toolbar { position: sticky; top: 0; z-index: 1000; }
+
+/* responsive links */
+.desktop-links { display: flex; gap: 0.5rem; }
+.mobile-toggle { display: none; }
+
+@media (max-width: 600px) {
+  .desktop-links { display: none; }
+  .mobile-toggle { display: inline-flex; }
+  .logo { font-size: 1.2rem; }
+}
