@@ -30,11 +30,13 @@ export class UserDetailsComponent {
   // which section currently being edited (key names: 'basic','religious','professional','address')
   editSection: string | null = null;
   metaOptions: MetaDataResponse = {} as MetaDataResponse;
+  // use absolute path to avoid relative-route 404s (e.g. /user-details/...)
+  defaultAvatarUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlMGUwZTAiLz4KICAKICA8IS0tIEhlYWQgLS0+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNzAiIHI9IjM1IiBmaWxsPSIjOTk5Ii8+CiAgCiAgPCEtLSBCb2R5IC0tPgogIDxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPg==';
   constructor(
     private userService: UserserviceService,
     private route: ActivatedRoute,
     private router: Router,
-    private auth:AuthService
+    private auth:AuthService                                                                                                                                                                                                                                                                                               
   ) {}
 
   ngOnInit() {
@@ -67,6 +69,15 @@ export class UserDetailsComponent {
 
   startEdit(section: string) { this.editSection = section; }
   cancelEdit() { this.editSection = null; }
+
+  onPhotoError(event: any) {
+    const img = event?.target as HTMLImageElement | undefined;
+    if (!img) return;
+    if (img.dataset && img.dataset['fallback'] === '1') return;
+    img.onerror = null;
+    img.dataset['fallback'] = '1';
+    img.src = this.defaultAvatarUrl;
+  }
 
   // children emit Partial<UserProfile> containing only changed fields
   saveSection(patch: Partial<UserProfile>) {

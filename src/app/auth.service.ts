@@ -8,7 +8,7 @@ import {jwtDecode} from 'jwt-decode';
 interface JwtPayload {
   role?: string; // might also be serialized with a long URI, see below
   userProfileId?: string;
-  FirstNamw?: string; // typo carried from backend
+  e?: string; // typo carried from backend
   LastName?: string;
   Gender?: string;
   [key: string]: any; // fallback for unexpected keys

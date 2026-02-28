@@ -48,6 +48,7 @@
             <li>
                
                     <img [src]="getFileUrl(user.id)"
+                        (error)="onPhotoError($event)"
                         alt="User Photo"
                         width="100" height="100" />
                   

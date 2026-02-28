@@ -3,7 +3,9 @@
 
   <!-- Photo block -->
   <div >
-    <img [src]="'http://localhost:5145/api/File/download/' + user.id" alt="avatar" width="120" height="120" />
+    <img [src]="'http://localhost:5145/api/File/download/' + user.id" 
+         (error)="onPhotoError($event)"
+         alt="avatar" width="120" height="120" />
     <div *ngIf="canEdit(user.id)">
 
     
