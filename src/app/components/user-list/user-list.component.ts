@@ -251,4 +251,11 @@ export class UserListComponent {
     }
     return age;
   }
+  toggleInterest(userId: number) {
+  if (this.isUserInterested(userId)) {
+    this.removeUserFromInterestedProfile(userId);
+  } else {
+    this.addUserToInterestedProfile(userId);
+  }
+}
 }

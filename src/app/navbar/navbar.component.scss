@@ -1,13 +1,19 @@
-.spacer { flex: 1 1 auto; }
-.toolbar-divider { height: 4px; background-color: rgba(0,0,0,0.1); }
-mat-toolbar { position: sticky; top: 0; z-index: 1000; }
+.active-nav {
+  @apply bg-rose-50 text-rose-600 font-bold !important;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    @apply bg-rose-500 rounded-full;
+  }
+}
 
-/* responsive links */
-.desktop-links { display: flex; gap: 0.5rem; }
-.mobile-toggle { display: none; }
-
-@media (max-width: 600px) {
-  .desktop-links { display: none; }
-  .mobile-toggle { display: inline-flex; }
-  .logo { font-size: 1.2rem; }
+::ng-deep .custom-nav-menu {
+  @apply rounded-2xl border-none shadow-2xl mt-4 overflow-hidden !important;
+  min-width: 220px !important;
 }

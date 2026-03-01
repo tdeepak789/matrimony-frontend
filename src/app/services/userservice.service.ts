@@ -44,9 +44,14 @@ export class UserserviceService {
   }
   uploadUserPhotos(files: File[], userId: number): Observable<any> {
     const formData: FormData = new FormData();
-    files.forEach((file, index) => {
+    
+    files.forEach((file) => {
+      // The first argument MUST match the name of the parameter in your C# method (files)
       formData.append('files', file, file.name);
     });
+
+    // IMPORTANT: Do NOT set HttpHeaders for 'Content-Type'. 
+    // Let the browser set it to 'multipart/form-data' with the correct boundary.
     return this.http.post<any>(`${this.apiUrl}/File/upload/${userId}`, formData);
   }
 

@@ -1,34 +1,45 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+// IMPORTANT: Add these for the menu to function
+import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink, MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    RouterLinkActive, 
+    MatMenuModule, 
+    MatButtonModule, 
+    MatIconModule
+  ],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
-  constructor(public auth:AuthService, private router:Router)
-  {
+  constructor(public auth: AuthService, private router: Router) {}
 
-  }
-  logout()
-  {
+  logout() {
     this.auth.logout();
+    this.router.navigate(['/login']);
   }
-  isLoginPage()
-  {
-      return this.router.url.startsWith("/login") || this.router.url.startsWith("");
+
+  isLoginPage(): boolean {
+    return this.router.url === '/login';
   }
-  isCreateUserProfilePage()
-  {
-      return (this.router.url.startsWith("/user-profile") ||this.router.url.startsWith(""));
+
+  isCreateUserProfilePage(): boolean {
+    return this.router.url === '/user-profile';
   }
-  
+
+  // Helper for the avatar source
+  getAvatarUrl(): string {
+    const userId = this.auth.getUserId();
+    return userId ? `http://localhost:5145/api/File/download/${userId}` : 'assets/default-avatar.png';
+  }
 }

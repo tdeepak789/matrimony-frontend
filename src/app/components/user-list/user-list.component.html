@@ -1,90 +1,105 @@
-<div class="page-container">
-  
-  <header class="filters-section">
-    <div class="filter-group">
-      <label>Search by Name</label>
-      <input type="text" [(ngModel)]="searchText" placeholder="Enter name..." />
+<div class="flex flex-col md:flex-row min-h-screen bg-gray-50">
+  <aside class="w-full md:w-80 bg-white border-r border-gray-200 p-6 sticky top-0 h-fit md:h-screen overflow-y-auto">
+    <h2 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+      <i class="bi bi-sliders"></i> Search Filters
+    </h2>
+
+    <div class="space-y-6">
+      <div class="filter-group">
+        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Search by Name</label>
+        <input type="text" [(ngModel)]="searchText" placeholder="Enter name..." 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+      </div>
+
+      <div class="filter-group">
+        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Gender</label>
+        <select [(ngModel)]="selectedGender" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+          <option value="">All Genders</option>
+          <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Religion</label>
+        <select [(ngModel)]="selectedReligion" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+          <option value="">All Religions</option>
+          <option *ngFor="let r of religions" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Caste</label>
+        <input type="text" [(ngModel)]="selectedCaste" placeholder="Caste name..." 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none">
+      </div>
+
+      <div class="filter-group">
+        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Marital Status</label>
+        <select [(ngModel)]="selectedMaritalStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+          <option value="">All Statuses</option>
+          <option *ngFor="let m of maritalStatuses" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-8 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm" *ngIf="showInterests">
+      <div class="inline-flex bg-gray-100 p-1 rounded-xl">
+        <button (click)="setInterestView('byUser')" 
+                [class.bg-white]="interestView === 'byUser'" 
+                [class.shadow-sm]="interestView === 'byUser'"
+                class="px-6 py-2 rounded-lg text-sm font-semibold transition-all">
+          Interested By You
+        </button>
+        <button (click)="setInterestView('inUser')" 
+                [class.bg-white]="interestView === 'inUser'" 
+                [class.shadow-sm]="interestView === 'inUser'"
+                class="px-6 py-2 rounded-lg text-sm font-semibold transition-all">
+          Interested In You
+        </button>
+      </div>
+      <span class="text-sm text-gray-500 font-medium">{{ filteredUsers().length }} Profiles Found</span>
     </div>
 
-    <div class="filter-group">
-      <label>Gender</label>
-      <select [(ngModel)]="selectedGender">
-        <option value="">All</option>
-        <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label>Religion</label>
-      <select [(ngModel)]="selectedReligion">
-        <option value="">All</option>
-        <option *ngFor="let r of religions" [value]="r">{{ r }}</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label>Caste</label>
-      <input type="text" [(ngModel)]="selectedCaste" placeholder="Caste name..." />
-    </div>
-
-    <div class="filter-group">
-      <label>Marital Status</label>
-      <select [(ngModel)]="selectedMaritalStatus">
-        <option value="">All</option>
-        <option *ngFor="let m of maritalStatuses" [value]="m">{{ m }}</option>
-      </select>
-    </div>
-  </header>
-
-  <div class="interest-toggle" *ngIf="showInterests">
-    <button (click)="setInterestView('byUser')" [class.active]="interestView === 'byUser'">
-      Interested By You
-    </button>
-    <button (click)="setInterestView('inUser')" [class.active]="interestView === 'inUser'">
-      Interested In You
-    </button>
-  </div>
-
-  <div class="user-grid">
-    @for (user of filteredUsers(); track user.id) {
-      <div class="user-card">
-        <div class="image-container">
-          <img [src]="getFileUrl(user.id)" (error)="onPhotoError($event)" alt="User Photo" />
-        </div>
-
-        <div class="card-content">
-          <h3 class="user-name">{{user.firstName}} {{user.lastName}}</h3>
-          <div class="meta-info">
-            <p><strong>Age:</strong> {{ calculateAge(user.dateOfBirth) }} years</p>
-            <p><strong>Caste:</strong> {{user.caste}}</p>
-            <p><strong>Job:</strong> {{user.occupation}}</p>
-            <p><strong>Income:</strong> {{user.income}}</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (user of filteredUsers(); track user.id) {
+        <div class="bg-white rounded-3xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all group">
+          <div class="relative h-64 overflow-hidden">
+            <img [src]="getFileUrl(user.id)" (error)="onPhotoError($event)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent"></div>
+            <div class="absolute bottom-4 left-4 text-white">
+              <h3 class="text-xl font-bold">{{user.firstName}} {{user.lastName}}</h3>
+              <p class="text-sm opacity-90">{{ calculateAge(user.dateOfBirth) }} yrs • {{user.caste}}</p>
+            </div>
+          </div>
+          
+          <div class="p-5 space-y-3">
+            <div class="flex items-center text-sm text-gray-600 gap-2">
+              <i class="bi bi-briefcase"></i> {{user.occupation}}
+            </div>
+            <div class="flex items-center text-sm text-gray-600 gap-2">
+              <i class="bi bi-geo-alt"></i> {{user.city}}
+            </div>
+            
+            <div class="flex gap-2 pt-2">
+              <a [routerLink]="['/user-details', user.id]" class="flex-1 text-center py-2.5 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-600 hover:text-white transition-all">
+                Full Profile
+              </a>
+              <button 
+                *ngIf="auth.isLoggedIn() && !auth.isAdmin()"
+                (click)="toggleInterest(user.id)"
+                [class]="isUserInterested(user.id) ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-400 hover:bg-rose-100 hover:text-rose-600'"
+                class="p-2.5 rounded-xl transition-all">
+                <i [class]="isUserInterested(user.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+              </button>
+              <button *ngIf="auth.isAdmin()" (click)="deleteUser(user.id)" class="p-2.5 bg-red-50 text-red-600 rounded-xl">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="card-actions">
-          <a [routerLink]="['/user-details', user.id]" class="btn-view">
-            View Full Profile
-          </a>
-          
-          <button 
-            *ngIf="auth.isLoggedIn() && !auth.isAdmin()" 
-            type="button" 
-            class="btn-interest"
-            [class.remove]="isUserInterested(user.id)"
-            (click)="isUserInterested(user.id) ? removeUserFromInterestedProfile(user.id) : addUserToInterestedProfile(user.id)">
-            {{ isUserInterested(user.id) ? 'Remove Interest' : 'Express Interest' }}
-          </button>
-
-          <button *ngIf="auth.isAdmin()" class="btn-delete" (click)="deleteUser(user.id)">
-            Delete Profile
-          </button>
-        </div>
-      </div>
-    } @empty {
-      <div class="empty-state">
-        <p>No profiles found matching your search criteria.</p>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  </main>
 </div>

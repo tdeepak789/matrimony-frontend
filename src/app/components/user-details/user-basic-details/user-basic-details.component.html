@@ -1,56 +1,120 @@
-<div class="card">
-  <h3>Basic Details</h3>
+<div class="basic-details-container">
+  <div *ngIf="!editing; else editTpl" class="animate-in fade-in duration-500">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+      
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Full Name</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-2">
+          <i class="bi bi-person-badge text-rose-500"></i>
+          {{ user.firstName }} {{ user.lastName }}
+        </p>
+      </div>
 
-  <div *ngIf="!editing; else editTpl">
-    <p><strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</p>
-    <p ><strong>DOB:</strong> {{ user.dateOfBirth | date:'yyyy-MM-dd hh:mm' }}</p>
-    <p><strong>Gender:</strong> {{ user.gender }}</p>
-    <p><strong>Height:</strong> {{ user.height }}</p>
-    <p><strong>Bio:</strong> {{ user.bio }}</p>
-    <p><strong>Marital Status:</strong> {{ user.maritalStatus }}</p>
-    <p><strong>Mother Tongue:</strong> {{ user.motherTongue }}</p>
-    <p *ngIf="canEdit" ><strong>Email:</strong> {{ user.email }}</p>
-    <p *ngIf="canEdit" ><strong>Phone:</strong> {{ user.phoneNumber }}</p>
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Date of Birth</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-2">
+          <i class="bi bi-calendar-event text-rose-500"></i>
+          {{ user.dateOfBirth | date:'dd MMM yyyy' }}
+        </p>
+      </div>
 
-    <button *ngIf="canEdit"  (click)="onEdit()">Edit</button>
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Gender & Height</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-2">
+          <i class="bi bi-person-up text-rose-500"></i>
+          {{ user.gender }} • {{ user.height }} cm
+        </p>
+      </div>
+
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Marital Status</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-2">
+          <i class="bi bi-heart-half text-rose-500"></i>
+          {{ user.maritalStatus }}
+        </p>
+      </div>
+
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Mother Tongue</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-2">
+          <i class="bi bi-translate text-rose-500"></i>
+          {{ user.motherTongue }}
+        </p>
+      </div>
+
+      <ng-container *ngIf="canEdit">
+        <div class="detail-item md:col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-wrap gap-8 mt-4">
+          <div>
+            <label class="text-[9px] font-black uppercase text-slate-400 block mb-1">Email Address</label>
+            <p class="text-slate-600 text-sm font-semibold"><i class="bi bi-envelope-at mr-2"></i>{{ user.email }}</p>
+          </div>
+          <div>
+            <label class="text-[9px] font-black uppercase text-slate-400 block mb-1">Phone Number</label>
+            <p class="text-slate-600 text-sm font-semibold"><i class="bi bi-telephone-outbound mr-2"></i>{{ user.phoneNumber }}</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="detail-item md:col-span-2">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">About Me / Bio</label>
+        <p class="text-slate-600 leading-relaxed italic">"{{ user.bio || 'No bio provided yet.' }}"</p>
+      </div>
+    </div>
   </div>
 
   <ng-template #editTpl>
-    <form [formGroup]="form" (ngSubmit)="onSave()">
-      <label>First name <input formControlName="firstName" /></label>
-      <div *ngIf="form.get('firstName')?.touched && form.get('firstName')?.invalid" style="color:red">Required</div>
+    <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">First Name</label>
+          <input formControlName="firstName" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none transition-all">
+          <p *ngIf="form.get('firstName')?.touched && form.get('firstName')?.invalid" class="text-red-500 text-[10px] mt-1 font-bold">First name is required</p>
+        </div>
 
-      <label>Last name <input formControlName="lastName" /></label>
-      <div *ngIf="form.get('lastName')?.touched && form.get('lastName')?.invalid" style="color:red">Required</div>
-      <label>DOB <input type="datetime-local" formControlName="dateOfBirth" /></label>
-      <label>Gender 
-        <select formControlName="gender">
-          <option value="">Select Gender</option>
-          <option *ngFor="let l of metaOptions?.genders" [value]="l">{{l}}</option>
-        </select>
-      </label>
-      <label>Height <input type="number" formControlName="height" /></label>
-      <label>Bio <input formControlName="bio" /></label>
-      <label>Marital Status
-        <select formControlName="maritalStatus">
-          <option value="">--Select--</option>
-          <option *ngFor="let l of metaOptions?.maritalStatuses" [value]="l">{{l}}</option>
-        </select>
-      </label>
-      <label>
-        Mother Tongue:
-        <select formControlName="motherTongue">
-          <option value="">Select Language</option>
-          <option *ngFor="let language of metaOptions?.languages" [value]="language">{{ language }}</option>
-        </select>
-      </label>
-      <label>Email <input formControlName="email" /></label>
-      <div *ngIf="form.get('email')?.touched && form.get('email')?.invalid" style="color:red">Invalid email</div>
-      <label>Phone <input formControlName="phoneNumber" /></label>
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Last Name</label>
+          <input formControlName="lastName" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+        </div>
 
-      <div class="actions">
-        <button type="submit">Save</button>
-        <button type="button" (click)="onCancel()">Cancel</button>
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Date of Birth</label>
+          <input type="datetime-local" formControlName="dateOfBirth" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Gender</label>
+          <select formControlName="gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <option value="">Select Gender</option>
+            <option *ngFor="let l of metaOptions?.genders" [value]="l">{{l}}</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Marital Status</label>
+          <select formControlName="maritalStatus" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <option *ngFor="let l of metaOptions?.maritalStatuses" [value]="l">{{l}}</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Email</label>
+          <input formControlName="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+        </div>
+
+        <div class="form-control md:col-span-2">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Bio</label>
+          <textarea formControlName="bio" rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 pt-6 border-t border-slate-100">
+        <button type="submit" [disabled]="form.invalid" class="px-8 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 disabled:opacity-50 transition-all">
+          Save Details
+        </button>
+        <button type="button" (click)="onCancel()" class="px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+          Cancel
+        </button>
       </div>
     </form>
   </ng-template>

@@ -1,37 +1,90 @@
-<div class="card">
-  <h3>Address</h3>
+<div class="address-details-container">
+  <div *ngIf="!editing; else editTpl" class="animate-in fade-in duration-500">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+      
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Current Residence</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-rose-50 text-rose-600 rounded-lg">
+            <i class="bi bi-geo-alt-fill"></i>
+          </span>
+          {{ user.city }}, {{ user.state }}
+        </p>
+        <p class="text-slate-500 text-xs mt-1 ml-11">{{ user.country }}</p>
+      </div>
 
-  <div *ngIf="!editing; else editTpl">
-    <p><strong>City:</strong> {{ user.city }}</p>
-    <p><strong>State:</strong> {{ user.state }}</p>
-    <p><strong>Country:</strong> {{ user.country }}</p>
-    <button *ngIf="canEdit"  (click)="onEdit()">Edit</button>
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Native Place</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-slate-100 text-slate-600 rounded-lg">
+            <i class="bi bi-house-heart-fill"></i>
+          </span>
+          {{ user.city || 'Not Specified' }}
+        </p>
+      </div>
+
+      <ng-container *ngIf="canEdit">
+        <div class="detail-item md:col-span-2 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+          <label class="text-[9px] font-black uppercase text-slate-400 block mb-2 flex items-center gap-2">
+            <i class="bi bi-shield-lock-fill"></i> Private Address (Only visible to you)
+          </label>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            {{ user.city || 'Please add your full address for verification purposes.' }}
+          </p>
+        </div>
+      </ng-container>
+
+    </div>
   </div>
 
   <ng-template #editTpl>
-    <form [formGroup]="form" (ngSubmit)="onSave()">
-      <label>Country 
-        <select formControlName="country">
-          <option value="">Select Country</option>
-          <option *ngFor="let l of metaOptions?.countries" [value]="l">{{l}}</option>
-        </select>
-      </label>
-      <label>State 
-        <select formControlName="state">
-          <option value="">Select State</option>
-          <option *ngFor="let l of metaOptions?.states" [value]="l">{{l}}</option>
-        </select>
-      </label>
-      <label>City 
-        <select formControlName="city">
-          <option value="">Select City</option>
-          <option *ngFor="let l of metaOptions?.cities" [value]="l">{{l}}</option>
-        </select>
-      </label>
+    <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Country</label>
+          <select formControlName="country" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+            <option value="">Select Country</option>
+            <option *ngFor="let c of metaOptions?.countries" [value]="c">{{ c }}</option>
+          </select>
+        </div>
 
-      <div class="actions">
-        <button type="submit">Save</button>
-        <button type="button" (click)="onCancel()">Cancel</button>
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">State</label>
+          <select formControlName="state" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <option value="">Select State</option>
+            <option *ngFor="let s of metaOptions?.states" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">City</label>
+          <select formControlName="city" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <option value="">Select City</option>
+            <option *ngFor="let city of metaOptions?.cities" [value]="city">{{ city }}</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Native Place</label>
+          <input formControlName="nativePlace" placeholder="e.g. Madurai, Tamil Nadu"
+                 class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+        </div>
+
+        <div class="form-control md:col-span-2">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Full House Address</label>
+          <textarea formControlName="address" rows="3" placeholder="Door No, Street Name, Area..."
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 pt-6 border-t border-slate-100">
+        <button type="submit" [disabled]="form.invalid" class="px-8 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all">
+          Save Address
+        </button>
+        <button type="button" (click)="onCancel()" class="px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+          Cancel
+        </button>
       </div>
     </form>
   </ng-template>

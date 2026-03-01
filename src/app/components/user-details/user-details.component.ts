@@ -1,16 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserserviceService } from '../../services/userservice.service';
-import { UserProfile } from '../../models/app.models';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil, map, filter, switchMap } from 'rxjs';
 
+import { UserserviceService } from '../../services/userservice.service';
+import { AuthService } from '../../auth.service';
+import { UserProfile } from '../../models/app.models';
+import { MetaDataResponse } from '../../models/MetaDataResponse';
+
+// Import child components
 import { UserBasicDetailsComponent } from './user-basic-details/user-basic-details.component';
 import { UserReligiousDetailsComponent } from './user-religious-details/user-religious-details.component';
 import { UserProfessionalDetailsComponent } from './user-professional-details/user-professional-details.component';
-import {  UserAddressDetailsComponent  } from './user-address-details/user-address-details.component';
-import { MetaDataResponse } from '../../models/MetaDataResponse';
-import { AuthService } from '../../auth.service';
-import { switchMap } from 'rxjs';
+import { UserAddressDetailsComponent } from './user-address-details/user-address-details.component';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 @Component({
   selector: 'app-user-details',
@@ -25,111 +30,161 @@ import { switchMap } from 'rxjs';
   templateUrl: './user-details.component.html',
   styleUrls: ['./user-details.component.scss']
 })
-export class UserDetailsComponent {
+export class UserDetailsComponent implements OnInit, OnDestroy {
   user: UserProfile | null = null;
-  // which section currently being edited (key names: 'basic','religious','professional','address')
   editSection: string | null = null;
+  activeSection: string = 'basic';
   metaOptions: MetaDataResponse = {} as MetaDataResponse;
-  // use absolute path to avoid relative-route 404s (e.g. /user-details/...)
-  defaultAvatarUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlMGUwZTAiLz4KICAKICA8IS0tIEhlYWQgLS0+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNzAiIHI9IjM1IiBmaWxsPSIjOTk5Ii8+CiAgCiAgPCEtLSBCb2R5IC0tPgogIDxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPg==';
+  private destroy$ = new Subject<void>();
+
   constructor(
     private userService: UserserviceService,
     private route: ActivatedRoute,
     private router: Router,
-    private auth:AuthService                                                                                                                                                                                                                                                                                               
+    public auth: AuthService
   ) {}
 
   ngOnInit() {
-    // support loading by route param userId OR fetch current user
-    const idFromRoute = this.route.snapshot.paramMap.get('userId');
-    if (idFromRoute) {
-      const id = Number(idFromRoute);
-      this.userService.getUserProfileById(id).subscribe({ next: u => this.user = u });
-    } 
+    this.route.paramMap.pipe(
+      map(params => params.get('userId')),
+      filter(id => id !== null),
+      switchMap(id => this.userService.getUserProfileById(Number(id))),
+      takeUntil(this.destroy$)
+    ).subscribe(u => this.user = u);
 
-     this.route.paramMap
-      .pipe(
-        switchMap(params => {
-          const id = Number(params.get('userId'));
-          return this.userService.getUserProfileById(id);
-        })
-      )
-      .subscribe({
-        next: user => this.user = user,
-        error: err => console.error(err)
+    this.userService.getMetaData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(meta => this.metaOptions = meta);
+  }
+
+  // --- NAVIGATION & SWITCHING ---
+  scrollTo(sectionId: string) {
+    this.activeSection = sectionId;
+    this.editSection = null; // Reset edit mode to ensure correct height
+
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  }
+
+  // --- PHOTO UPLOAD ---
+  onFileChange(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0 && this.user) {
+      this.userService.uploadUserPhotos(Array.from(files), this.user.id).subscribe({
+        next: () => {
+          // Force image refresh using timestamp
+          const img = document.querySelector('.profile-img') as HTMLImageElement;
+          if (img) {
+            img.src = `${this.userService.getFileUrl(this.user!.id)}?t=${new Date().getTime()}`;
+          }
+          alert('Photo updated!');
+        },
+        error: (err) => alert('Upload failed. Check file size and format.')
       });
-    // else {
-    //   this.userService.getCurrentUser().subscribe({ next: u => this.user = u });
-    // }
-    this.userService.getMetaData().subscribe({
-      next: meta => this.metaOptions = meta,
-      error: err => console.error(err)
+    }
+  }
+
+  // --- PROFILE ACTIONS ---
+  saveSection(patch: Partial<UserProfile>) {
+    if (!this.user) return;
+    const merged = { ...this.user, ...patch };
+    this.userService.updateUserProfile(this.user.id, merged).subscribe(updated => {
+      this.user = updated;
+      this.editSection = null;
     });
   }
 
   startEdit(section: string) { this.editSection = section; }
   cancelEdit() { this.editSection = null; }
 
+  canEdit(id: number): boolean {
+    return this.auth.isAdmin() || this.auth.getUserId() === id;
+  }
+
   onPhotoError(event: any) {
-    const img = event?.target as HTMLImageElement | undefined;
-    if (!img) return;
-    if (img.dataset && img.dataset['fallback'] === '1') return;
-    img.onerror = null;
-    img.dataset['fallback'] = '1';
-    img.src = this.defaultAvatarUrl;
-  }
-
-  // children emit Partial<UserProfile> containing only changed fields
-  saveSection(patch: Partial<UserProfile>) {
-    if (!this.user) return;
-    const merged: UserProfile = { ...this.user, ...patch };
-
-    // id is required as per your model
-    this.userService.updateUserProfile(merged.id, merged).subscribe({
-      next: updated => {
-        this.user = updated;
-        this.editSection = null;
-      },
-      error: err => {
-        console.error('Update failed', err);
-        // optionally show toast / error message
-      }
-    });
-  }
-
-  // photo upload helpers
-  selectedFiles: File[] = [];
-  onFileChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    const files = Array.from(input.files);
-    if (files.length > 3) { alert('Max 3 photos'); return; }
-    this.selectedFiles = files;
-  }
-
-  onPhotoSubmit() {
-    if (!this.user || this.selectedFiles.length === 0) return;
-    this.userService.uploadUserPhotos(this.selectedFiles, this.user.id).subscribe({
-      next: () => {
-        alert('Uploaded');
-        // refresh user or images if needed
-      },
-      error: err => console.error(err)
-    });
+    event.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDgwIDgwIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9IiNlMmU4ZjAiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMwIiByPSIxNSIgZmlsbD0iIzk0YTNCOCIvPjxwYXRoIGQ9Ik0yMCA2MUMyMCA1MCAzMCA0NSA0MCA0NVM2MCA1MCA2MCA2MVY3MEgyMFY2MVoiIGZpbGw9IiM5NGEzQjgiLz48L3N2Zz4=';
   }
 
   deleteUser() {
-    if (!this.user) return;
-    if (!confirm('Delete user?')) return;
-    this.userService.deleteUserProfile(this.user.id).subscribe({
-      next: () => this.router.navigate(['/user-list']),
-      error: err => console.error(err)
-    });
+    if (confirm('Permanently delete this account?') && this.user) {
+      this.userService.deleteUserProfile(this.user.id).subscribe(() => {
+        this.router.navigate(['/user-list']);
+      });
+    }
   }
 
-  canEdit(profileUserId: number): boolean {
-    const currentUserId = this.auth.getUserId();
-    return this.auth.isAdmin() || currentUserId === profileUserId;
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  calculateAge(birthDate: string | Date): number {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    // Adjust if the birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+  getFileUrl(userId: number | any): string {
+    if (!userId) return this.defaultAvatarUrl;
+    
+    // Replace with your actual backend domain if it's not localhost
+    const baseUrl = 'http://localhost:5145/api/File/download';
+    
+    // Tip: Adding a timestamp (?t=...) helps bypass browser cache 
+    // when a user uploads a new photo.
+    return `${baseUrl}/${userId}`;
   }
 
+  async exportToPDF() {
+  if (!this.user) return;
+
+  // Show a loading state if you have one
+  const data = document.getElementById('profile-content-to-export'); // Wrap your sections in this ID
+  
+  if (data) {
+    try {
+      const canvas = await html2canvas(data, {
+        scale: 2, // Higher quality
+        useCORS: true, // Crucial for loading images from your .NET API
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const contentDataURL = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // Add a header/title to the PDF
+      pdf.setFontSize(18);
+      pdf.setTextColor(225, 29, 72); // Rose-600 color
+      pdf.text(`Bio-Data: ${this.user.firstName} ${this.user.lastName}`, 10, 15);
+      
+      pdf.addImage(contentDataURL, 'PNG', 0, 25, imgWidth, imgHeight);
+      pdf.save(`BioData_${this.user.firstName}_${this.user.id}.pdf`);
+      
+    } catch (error) {
+      console.error('PDF Generation failed', error);
+      alert('Failed to generate PDF. Ensure all images are loaded.');
+    }
+  }
+}
+
+  // Fallback SVG for when a user has no photo
+  defaultAvatarUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjVmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSIzNSIgZmlsbD0iI2QxZDVkYiIvPjxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjZDFkNWRiIi8+PC9zdmc+';
 }

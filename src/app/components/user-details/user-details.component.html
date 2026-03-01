@@ -1,70 +1,145 @@
-<div *ngIf="user; else loading">
-  <h1>{{ user.firstName }} {{ user.lastName }}</h1>
-
-  <!-- Photo block -->
-  <div >
-    <img [src]="'http://localhost:5145/api/File/download/' + user.id" 
-         (error)="onPhotoError($event)"
-         alt="avatar" width="120" height="120" />
-    <div *ngIf="canEdit(user.id)">
-
-    
-    <input type="file" (change)="onFileChange($event)" accept="image/*" multiple />
-    <button (click)="onPhotoSubmit()">Upload Photos</button>
-    <button (click)="deleteUser()">Delete Account</button>
-    </div>
+<div class="min-h-screen bg-[#f8fafc] pb-24" *ngIf="user; else loading">
+  <div class="mt-6 space-y-3" *ngIf="auth.isAdmin()">
+  <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest px-4">Admin Actions</p>
+  
+  <button (click)="exportToPDF()" 
+          class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all group">
+    <i class="bi bi-file-earmark-pdf-fill text-rose-500 group-hover:scale-110 transition-transform"></i>
+    Export Bio-Data
+  </button>
+</div>
+  <div class="relative h-64 bg-slate-900 overflow-hidden">
+    <div class="absolute inset-0 opacity-40 bg-cover bg-center blur-sm scale-110" 
+         [style.backgroundImage]="'url(' + getFileUrl(user.id) + ')'"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-[#f8fafc]"></div>
   </div>
 
-  <!-- Sections -->
-  <section class="section">
-    <user-basic-details
-      [user]="user"
-      [editing]="editSection === 'basic'"
-      (enterEdit)="startEdit('basic')"
-      (cancelEdit)="cancelEdit()"
-      (save)="saveSection($event)"
-      [metaOptions]="metaOptions"
-      [canEdit]="canEdit(user.id)" >
-    </user-basic-details>
-  </section>
+  <div class="max-w-6xl mx-auto px-4 -mt-32 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <div class="lg:col-span-4">
+        <div class="sticky top-8 bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-white">
+          <div class="relative w-40 h-40 mx-auto mb-6">
+            <img [src]="getFileUrl(user.id)" (error)="onPhotoError($event)" 
+                 class="w-full h-full rounded-[2rem] object-cover shadow-inner ring-4 ring-rose-50">
+            
+            <button *ngIf="canEdit(user.id)" (click)="fileBtn.click()"
+                    class="absolute -bottom-2 -right-2 p-3 bg-white text-rose-600 rounded-2xl shadow-lg hover:scale-110 transition-transform">
+              <i class="bi bi-camera-fill text-xl"></i>
+            </button>
+            <input type="file" #fileBtn (change)="onFileChange($event)" hidden accept="image/*">
+          </div>
 
-  <section class="section">
-    <user-religious-details
-      [user]="user"
-      [editing]="editSection === 'religious'"
-      (enterEdit)="startEdit('religious')"
-      (cancelEdit)="cancelEdit()"
-      (save)="saveSection($event)"
-      [metaOptions]="metaOptions"
-      [canEdit]="canEdit(user.id)" >
-    </user-religious-details>
-  </section>
+          <div class="text-center space-y-2 mb-8">
+            <h1 class="text-2xl font-black text-slate-800">{{user.firstName}} {{user.lastName}}</h1>
+            <p class="text-rose-600 font-bold px-4 py-1 bg-rose-50 rounded-full inline-block text-sm">
+              {{calculateAge(user.dateOfBirth)}} Years • {{user.gender}}
+            </p>
+          </div>
 
-  <section class="section">
-    <user-professional-details
-      [user]="user"
-      [editing]="editSection === 'professional'"
-      (enterEdit)="startEdit('professional')"
-      (cancelEdit)="cancelEdit()"
-      (save)="saveSection($event)"
-      [metaOptions]="metaOptions"
-      [canEdit]="canEdit(user.id)" >
-    </user-professional-details>
-  </section>
+          <nav class="space-y-1">
+            <button (click)="scrollTo('basic')" [class.bg-slate-50]="activeSection === 'basic'" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+              <i class="bi bi-person text-lg"></i> Basic Information
+            </button>
+            <button (click)="scrollTo('religious')" [class.bg-slate-50]="activeSection === 'religious'" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+              <i class="bi bi-moon-stars text-lg"></i> Religious Details
+            </button>
+            <button (click)="scrollTo('professional')" [class.bg-slate-50]="activeSection === 'professional'" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+              <i class="bi bi-briefcase text-lg"></i> Career & Education
+            </button>
+            <button (click)="scrollTo('address')" [class.bg-slate-50]="activeSection === 'address'" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+              <i class="bi bi-geo-alt text-lg"></i> Location Details
+            </button>
+          </nav>
+        </div>
+      </div>
 
-  <section class="section">
-    <user-address-details
-      [user]="user"
-      [editing]="editSection === 'address'"
-      (enterEdit)="startEdit('address')"
-      (cancelEdit)="cancelEdit()"
-      (save)="saveSection($event)"
-      [metaOptions]="metaOptions"
-      [canEdit]="canEdit(user.id)" >
-    </user-address-details>
-  </section>
+      <div class="lg:col-span-8 space-y-8">
+        
+        <section id="basic" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h2 class="font-black text-slate-800 uppercase tracking-wider text-xs flex items-center gap-2">
+              <span class="w-1.5 h-5 bg-rose-500 rounded-full"></span> Personal Details
+            </h2>
+            <button *ngIf="canEdit(user.id) && editSection !== 'basic'" (click)="startEdit('basic')" 
+                    class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl border border-slate-200 shadow-sm hover:text-rose-600 hover:border-rose-200 transition-all">
+              <i class="bi bi-pencil-square"></i> EDIT
+            </button>
+          </div>
+          <div class="p-8">
+            <user-basic-details [user]="user" [editing]="editSection === 'basic'" 
+              (enterEdit)="startEdit('basic')" (cancelEdit)="cancelEdit()" (save)="saveSection($event)" 
+              [metaOptions]="metaOptions" [canEdit]="canEdit(user.id)">
+            </user-basic-details>
+          </div>
+        </section>
+
+        <section id="religious" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h2 class="font-black text-slate-800 uppercase tracking-wider text-xs flex items-center gap-2">
+              <span class="w-1.5 h-5 bg-rose-500 rounded-full"></span> Religious & Lifestyle
+            </h2>
+            <button *ngIf="canEdit(user.id) && editSection !== 'religious'" (click)="startEdit('religious')" 
+                    class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl border border-slate-200 shadow-sm transition-all">
+              <i class="bi bi-pencil-square"></i> EDIT
+            </button>
+          </div>
+          <div class="p-8">
+            <user-religious-details [user]="user" [editing]="editSection === 'religious'" 
+              (enterEdit)="startEdit('religious')" (cancelEdit)="cancelEdit()" (save)="saveSection($event)" 
+              [metaOptions]="metaOptions" [canEdit]="canEdit(user.id)">
+            </user-religious-details>
+          </div>
+        </section>
+
+        <section id="professional" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h2 class="font-black text-slate-800 uppercase tracking-wider text-xs flex items-center gap-2">
+              <span class="w-1.5 h-5 bg-rose-500 rounded-full"></span> Professional & Education
+            </h2>
+            <button *ngIf="canEdit(user.id) && editSection !== 'professional'" (click)="startEdit('professional')" 
+                    class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl border border-slate-200 shadow-sm transition-all">
+              <i class="bi bi-pencil-square"></i> EDIT
+            </button>
+          </div>
+          <div class="p-8">
+            <user-professional-details [user]="user" [editing]="editSection === 'professional'" 
+              (enterEdit)="startEdit('professional')" (cancelEdit)="cancelEdit()" (save)="saveSection($event)" 
+              [metaOptions]="metaOptions" [canEdit]="canEdit(user.id)">
+            </user-professional-details>
+          </div>
+        </section>
+
+        <section id="address" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h2 class="font-black text-slate-800 uppercase tracking-wider text-xs flex items-center gap-2">
+              <span class="w-1.5 h-5 bg-rose-500 rounded-full"></span> Location & Contact
+            </h2>
+            <button *ngIf="canEdit(user.id) && editSection !== 'address'" (click)="startEdit('address')" 
+                    class="flex items-center gap-2 px-4 py-2 bg-white text-slate-600 text-[10px] font-black rounded-xl border border-slate-200 shadow-sm transition-all">
+              <i class="bi bi-pencil-square"></i> EDIT
+            </button>
+          </div>
+          <div class="p-8">
+            <user-address-details [user]="user" [editing]="editSection === 'address'" 
+              (enterEdit)="startEdit('address')" (cancelEdit)="cancelEdit()" (save)="saveSection($event)" 
+              [metaOptions]="metaOptions" [canEdit]="canEdit(user.id)">
+            </user-address-details>
+          </div>
+        </section>
+
+        <div *ngIf="canEdit(user.id)" class="pt-12 text-center pb-12">
+          <button (click)="deleteUser()" class="group flex items-center gap-2 mx-auto text-slate-400 hover:text-red-500 transition-all text-[10px] font-black tracking-widest uppercase">
+            <i class="bi bi-trash3 text-sm"></i> Permanently Delete Account
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
-
 <ng-template #loading>
-  <p>Loading...</p>
+  <div class="h-screen flex items-center justify-center bg-slate-50">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500"></div>
+  </div>
 </ng-template>

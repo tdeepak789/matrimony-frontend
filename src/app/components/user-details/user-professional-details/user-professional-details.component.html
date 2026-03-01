@@ -1,24 +1,98 @@
-<div class="card">
-  <h3>Professional Details</h3>
+<div class="professional-details-container">
+  <div *ngIf="!editing; else editTpl" class="animate-in fade-in duration-500">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+      
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Highest Education</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+            <i class="bi bi-mortarboard-fill"></i>
+          </span>
+          {{ user.education || 'Not Specified' }}
+        </p>
+      </div>
 
-  <div *ngIf="!editing; else editTpl">
-    <p><strong>Education:</strong> {{ user.education }}</p>
-    <p><strong>Occupation:</strong> {{ user.occupation }}</p>
-    <p><strong>Income:</strong> {{ user.income }}</p>
-    <p><strong>Work Location:</strong> {{ user.workLocation }}</p>
-    <button  *ngIf="canEdit" (click)="onEdit()">Edit</button>
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Profession / Designation</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+            <i class="bi bi-briefcase-fill"></i>
+          </span>
+          {{ user.occupation || 'Not Specified' }}
+        </p>
+      </div>
+
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Annual Income</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+            <i class="bi bi-cash-stack"></i>
+          </span>
+          {{ user.income ? (user.income | currency:'INR':'symbol':'1.0-0') : 'Hidden/Not Specified' }}
+        </p>
+      </div>
+
+      <div class="detail-item">
+        <label class="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 block mb-1">Work Location</label>
+        <p class="text-slate-700 font-bold text-base flex items-center gap-3">
+          <span class="p-2 bg-rose-50 text-rose-600 rounded-lg">
+            <i class="bi bi-building-geo"></i>
+          </span>
+          {{ user.workLocation || 'Not Specified' }}
+        </p>
+      </div>
+
+    </div>
   </div>
 
   <ng-template #editTpl>
-    <form [formGroup]="form" (ngSubmit)="onSave()">
-      <label>Education <input formControlName="education" /></label>
-      <label>Occupation <input formControlName="occupation" /></label>
-      <label>Income <input type="number" formControlName="income" /></label>
-      <label>Work Location <input formControlName="workLocation" /></label>
+    <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Highest Education</label>
+          <div class="relative">
+             <i class="bi bi-mortarboard absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+             <input formControlName="education" placeholder="e.g. MBA, B.Tech" 
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none transition-all">
+          </div>
+        </div>
 
-      <div class="actions">
-        <button type="submit">Save</button>
-        <button type="button" (click)="onCancel()">Cancel</button>
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Occupation</label>
+          <div class="relative">
+             <i class="bi bi-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+             <input formControlName="occupation" placeholder="e.g. Software Engineer" 
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+          </div>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Annual Income (INR)</label>
+          <div class="relative">
+             <i class="bi bi-currency-rupee absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+             <input type="number" formControlName="income" placeholder="Enter amount" 
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+          </div>
+        </div>
+
+        <div class="form-control">
+          <label class="text-xs font-bold text-slate-500 mb-2 block">Work Location</label>
+          <div class="relative">
+             <i class="bi bi-geo-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+             <input formControlName="workLocation" placeholder="City, State" 
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 pt-6 border-t border-slate-100">
+        <button type="submit" [disabled]="form.invalid" class="px-8 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 disabled:opacity-50 transition-all">
+          Save Career Details
+        </button>
+        <button type="button" (click)="onCancel()" class="px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+          Cancel
+        </button>
       </div>
     </form>
   </ng-template>
