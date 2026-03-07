@@ -8,17 +8,26 @@
   </div>
 
   <div class="hidden md:flex items-center gap-2">
+    @if(!auth.isLoggedIn())
+    {
+      <ng-container>
+        @if(isLoginPage())
+        {
+          <a routerLink="/user-profile" 
+            class="px-5 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
+            Create Account
+          </a>
+        }
+        @else if (isCreateUserProfilePage())
+        {
+          <a routerLink="/login" 
+          class="px-6 py-2.5 bg-rose-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all">
+          Login
+          </a>
+        }
+      </ng-container>
+    }
     
-    <ng-container *ngIf="!auth.isLoggedIn()">
-      <a *ngIf="isLoginPage()" routerLink="/user-profile" 
-         class="px-5 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
-        Create Account
-      </a>
-      <a *ngIf="isCreateUserProfilePage()" routerLink="/login" 
-         class="px-6 py-2.5 bg-rose-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all">
-        Login
-      </a>
-    </ng-container>
 
     <ng-container *ngIf="auth.isLoggedIn()">
       <a routerLink="/user-list" routerLinkActive="active-nav"

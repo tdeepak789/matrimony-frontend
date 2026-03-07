@@ -151,40 +151,55 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   async exportToPDF() {
   if (!this.user) return;
 
-  // Show a loading state if you have one
-  const data = document.getElementById('profile-content-to-export'); // Wrap your sections in this ID
+  const data = document.getElementById('profile-content-to-export');
   
-  if (data) {
-    try {
-      const canvas = await html2canvas(data, {
-        scale: 2, // Higher quality
-        useCORS: true, // Crucial for loading images from your .NET API
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+  if (!data) {
+    alert("Could not find profile content to export. Please ensure the content is loaded.");
+    return;
+  }
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const contentDataURL = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      // Add a header/title to the PDF
-      pdf.setFontSize(18);
-      pdf.setTextColor(225, 29, 72); // Rose-600 color
-      pdf.text(`Bio-Data: ${this.user.firstName} ${this.user.lastName}`, 10, 15);
-      
-      pdf.addImage(contentDataURL, 'PNG', 0, 25, imgWidth, imgHeight);
-      pdf.save(`BioData_${this.user.firstName}_${this.user.id}.pdf`);
-      
-    } catch (error) {
-      console.error('PDF Generation failed', error);
-      alert('Failed to generate PDF. Ensure all images are loaded.');
-    }
+  try {
+    // 1. Capture the element
+    const canvas = await html2canvas(data, {
+      scale: 2,
+      useCORS: true, 
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      scrollY: -window.scrollY // Fixes positioning if the page is scrolled
+    });
+
+    // 2. Prepare PDF
+    const contentDataURL = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    const imgWidth = 210; 
+    const pageHeight = 297; 
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    // 3. Add Header
+    pdf.setFontSize(22);
+    pdf.setTextColor(225, 29, 72); // Rose-600
+    pdf.text(`Bio-Data: ${this.user.firstName} ${this.user.lastName}`, 15, 20);
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 116, 139); // Slate-500
+    pdf.text(`Generated on SoulConnect: ${new Date().toLocaleDateString()}`, 15, 28);
+
+    // 4. Add Content
+    pdf.addImage(contentDataURL, 'PNG', 0, 35, imgWidth, imgHeight);
+
+    // 5. Trigger Download
+    const fileName = `BioData_${this.user.firstName}_${this.user.lastName}.pdf`;
+    
+    // This method forces the browser to treat it as a download
+    pdf.save(fileName);
+
+    console.log('PDF Saved successfully');
+  } catch (error) {
+    console.error('PDF Generation failed', error);
+    alert('Failed to generate PDF. Make sure your browser allows downloads from this site.');
   }
 }
-
   // Fallback SVG for when a user has no photo
   defaultAvatarUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjVmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSIzNSIgZmlsbD0iI2QxZDVkYiIvPjxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjZDFkNWRiIi8+PC9zdmc+';
 }
