@@ -6,10 +6,15 @@ import { CommonModule } from '@angular/common';
 import { MetaDataResponse } from '../../models/MetaDataResponse';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-user-profile-form',
-  imports: [CommonModule,FormsModule, ReactiveFormsModule,RouterLink],
+  imports: [CommonModule,FormsModule, ReactiveFormsModule,RouterLink, MatDatepickerModule, 
+    MatNativeDateModule, 
+    MatInputModule],
   templateUrl: './user-profile-form.component.html',
   styleUrl: './user-profile-form.component.scss'
 })
@@ -149,11 +154,18 @@ export class UserProfileFormComponent {
         valid = false;
       }
     }
-    if (valid) this.step++;
+    
+    if (valid) {
+      this.step++;
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Production UX: reset scroll
+    }
   }
 
   previousStep() {
-    if (this.step > 0) this.step--;
+    if (this.step > 0) {
+      this.step--;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
 

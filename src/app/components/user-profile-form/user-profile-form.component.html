@@ -1,26 +1,129 @@
-<form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-  <h3>{{steps[step].label}}</h3>
-  <div *ngFor="let field of steps[step].fields">
-    <label>{{field.label}}</label>
+<div class="min-h-screen bg-[#f8fafc] py-12 px-4 flex items-center justify-center">
+  <div class="w-full max-w-2xl bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 border border-white overflow-hidden animate-in fade-in duration-500">
+    
+    <div class="bg-slate-50 px-10 py-8 border-b border-slate-100">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight">{{steps[step].label}}</h2>
+          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Step {{step + 1}} of {{steps.length}}</p>
+        </div>
+        <div class="w-14 h-14 bg-white border border-slate-200 text-rose-600 rounded-2xl flex items-center justify-center shadow-sm">
+          <i class="bi bi-person-plus-fill text-2xl"></i>
+        </div>
+      </div>
 
-    <!-- Input -->
-    <input *ngIf="field.type !== 'select'" [type]="field.type" [formControlName]="field.name" [placeholder]="field.placeholder"/>
-
-    <!-- Dropdown -->
-    <select *ngIf="field.type === 'select'" [formControlName]="field.name">
-      <option value="">Select {{field.label}}</option>
-      <option *ngFor="let option of metaOptions[field.name]" [value]="option">{{option}}</option>
-    </select>
-
-    <!-- Error -->
-    <div *ngIf="profileForm.get(field.name)?.touched && profileForm.get(field.name)?.invalid" style="color: red;">
-      {{field.label}} is required
+      <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+        <div class="h-full bg-rose-500 transition-all duration-700 ease-out" 
+             [style.width.%]="((step + 1) / steps.length) * 100"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="buttons">
-    <button type="button" (click)="previousStep()" [disabled]="step===0">Previous</button>
-    <button type="button" *ngIf="step < steps.length-1" (click)="nextStep()">Next</button>
-    <button type="submit" *ngIf="step === steps.length-1">Submit</button>
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="p-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        
+        @for (field of steps[step].fields; track field.name) {
+          <div [class.md:col-span-2]="field.name === 'bio'" class="space-y-2">
+            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+              {{field.label}} @if(field.required){ <span class="text-rose-500">*</span> }
+            </label>
+
+            @if (field.type === 'date') {
+              <div class="relative group">
+                <input [matDatepicker]="picker" 
+                       [formControlName]="field.name"
+                       placeholder="Select Date"
+                       class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all font-semibold text-slate-700 cursor-pointer">
+                <mat-datepicker-toggle matIconSuffix [for]="picker" class="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500">
+                </mat-datepicker-toggle>
+                <mat-datepicker #picker startView="multi-year"></mat-datepicker>
+              </div>
+            }
+
+            @else if (field.type === 'time') {
+                <div class="relative group">
+                  <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors pointer-events-none z-10">
+                    <i class="bi bi-clock-fill"></i>
+                  </div>
+                  
+                  <input type="time" 
+                        [formControlName]="field.name"
+                        class="soul-time-input w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all font-bold text-slate-700 appearance-none">
+                  
+                  <div class="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-bold text-slate-300 uppercase tracking-widest pointer-events-none group-hover:text-rose-400 transition-colors">
+                    Set Time <i class="bi bi-chevron-down"></i>
+                  </div>
+                </div>
+              }
+
+            @else if (field.type === 'select') {
+              <div class="relative group">
+                <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors pointer-events-none z-10">
+                  <i class="bi bi-list-stars"></i>
+                </div>
+                
+                <select [formControlName]="field.name"
+                        class="soul-select w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all text-slate-700 font-bold appearance-none cursor-pointer">
+                  <option value="" disabled selected>Select {{field.label}}</option>
+                  @for (option of metaOptions[field.name]; track option) {
+                    <option [value]="option">{{option}}</option>
+                  }
+                </select>
+
+                <div class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 pointer-events-none transition-transform group-focus-within:rotate-180 duration-300">
+                  <i class="bi bi-chevron-down"></i>
+                </div>
+              </div>
+            }
+
+            @else {
+              <div class="relative group">
+                <input [type]="field.type" 
+                       [formControlName]="field.name" 
+                       [placeholder]="field.placeholder || ''"
+                       class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all placeholder:text-slate-300 text-slate-700 font-semibold">
+              </div>
+            }
+
+            @if (profileForm.get(field.name)?.touched && profileForm.get(field.name)?.invalid) {
+              <p class="text-[10px] font-bold text-rose-500 ml-1 flex items-center gap-1">
+                <i class="bi bi-exclamation-circle"></i> {{field.label}} is required
+              </p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-between mt-12 pt-8 border-t border-slate-50">
+        <button type="button" 
+                (click)="previousStep()" 
+                [disabled]="step === 0"
+                class="px-8 py-3 rounded-2xl font-bold text-slate-400 hover:text-slate-600 disabled:opacity-0 transition-all">
+          Back
+        </button>
+
+        <div class="flex gap-4">
+          @if (step < steps.length - 1) {
+            <button type="button" 
+                    (click)="nextStep()"
+                    class="px-10 py-3 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all flex items-center gap-2 group">
+              Continue <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </button>
+          } @else {
+            <button type="submit"
+                    class="px-12 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-xl shadow-rose-200 hover:bg-rose-700 transition-all flex items-center gap-2">
+              <i class="bi bi-check2-circle"></i> Complete Registration
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+
+    <div class="bg-slate-50 py-6 text-center border-t border-slate-100">
+      <p class="text-slate-500 text-sm font-medium">
+        Already have an account? 
+        <a routerLink="/login" class="text-rose-600 font-bold hover:underline ml-1">Login</a>
+      </p>
+    </div>
+
   </div>
-</form>
+</div>
