@@ -15,7 +15,7 @@ interface JwtPayload {
 }
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:5145/api/auth'; // your backend URL
+  private apiUrl = 'https://matrimony-backend-f5eo.onrender.com/api/auth'; // your backend URL
   private tokenKey = 'authToken';
   private userId = 'userId';
   private userRole = 'userRole';
