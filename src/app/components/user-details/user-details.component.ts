@@ -141,7 +141,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     if (!userId) return this.defaultAvatarUrl;
     
     // Replace with your actual backend domain if it's not localhost
-    const baseUrl = 'http://localhost:5145/api/File/download';
+    const baseUrl = 'https://matrimony-backend-f5eo.onrender.com/api/File/download';
     
     // Tip: Adding a timestamp (?t=...) helps bypass browser cache 
     // when a user uploads a new photo.

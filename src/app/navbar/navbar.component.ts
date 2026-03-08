@@ -40,6 +40,6 @@ export class NavbarComponent {
   // Helper for the avatar source
   getAvatarUrl(): string {
     const userId = this.auth.getUserId();
-    return userId ? `http://localhost:5145/api/File/download/${userId}` : 'assets/default-avatar.png';
+    return userId ? `https://matrimony-backend-f5eo.onrender.com/api/File/download/${userId}` : 'assets/default-avatar.png';
   }
 }

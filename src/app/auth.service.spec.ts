@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'https://localhost:5001/api/auth'; // your backend URL
+  private apiUrl = 'https://matrimony-backend-f5eo.onrender.com/api/auth'; // your backend URL
   private tokenKey = 'authToken';
 
   constructor(private http: HttpClient, private router: Router) {}
