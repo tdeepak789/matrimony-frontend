@@ -22,7 +22,7 @@ export class UserserviceService {
   getFileUrl(userId: number): string {
     return `${this.apiUrl}/File/download/${userId}`;
   }
-  apiUrl = 'http://localhost:5145/api'; // Replace with your actual API endpoint
+  apiUrl = 'https://matrimony-backend-f5eo.onrender.com/api'; // Replace with your actual API endpoint
   constructor(private http:HttpClient) { }
 
   getUsersProfiles(): Observable<UserProfile[]> {
