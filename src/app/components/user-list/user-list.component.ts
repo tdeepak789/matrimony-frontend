@@ -258,4 +258,9 @@ export class UserListComponent {
     this.addUserToInterestedProfile(userId);
   }
 }
+  isFilterVisible: boolean = false; // New variable for mobile toggle
+
+  toggleFilters() {
+    this.isFilterVisible = !this.isFilterVisible;
+  }
 }
