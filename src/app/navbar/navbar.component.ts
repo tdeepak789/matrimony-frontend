@@ -6,6 +6,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { BaseUrl } from '../models/constants';
 
 @Component({
   selector: 'app-navbar',
@@ -40,6 +41,6 @@ export class NavbarComponent {
   // Helper for the avatar source
   getAvatarUrl(): string {
     const userId = this.auth.getUserId();
-    return userId ? `https://matrimony-backend-f5eo.onrender.com/api/File/download/${userId}` : 'assets/default-avatar.png';
+    return userId ? `${BaseUrl}/api/File/download/${userId}` : 'assets/default-avatar.png';
   }
 }

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { CreatedUserProfileResponse, CreateUserProfile, UserProfile } from '../models/app.models';
 import { Observable, shareReplay } from 'rxjs';
 import { MetaDataResponse } from '../models/MetaDataResponse';
+import { BaseUrl } from '../models/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class UserserviceService {
   getFileUrl(userId: number): string {
     return `${this.apiUrl}/File/download/${userId}`;
   }
-  apiUrl = 'https://matrimony-backend-f5eo.onrender.com/api'; // Replace with your actual API endpoint
+  apiUrl = `${BaseUrl}/api`; // Replace with your actual API endpoint
   constructor(private http:HttpClient) { }
 
   getUsersProfiles(): Observable<UserProfile[]> {

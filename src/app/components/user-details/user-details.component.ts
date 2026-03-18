@@ -15,6 +15,7 @@ import { UserProfessionalDetailsComponent } from './user-professional-details/us
 import { UserAddressDetailsComponent } from './user-address-details/user-address-details.component';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { BaseUrl } from '../../models/constants';
 
 
 @Component({
@@ -141,7 +142,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     if (!userId) return this.defaultAvatarUrl;
     
     // Replace with your actual backend domain if it's not localhost
-    const baseUrl = 'https://matrimony-backend-f5eo.onrender.com/api/File/download';
+    const baseUrl = `${BaseUrl}/api/File/download`;
     
     // Tip: Adding a timestamp (?t=...) helps bypass browser cache 
     // when a user uploads a new photo.

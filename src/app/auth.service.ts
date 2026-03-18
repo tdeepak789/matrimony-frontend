@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {jwtDecode} from 'jwt-decode';
+import { BaseUrl } from './models/constants';
 
 
 interface JwtPayload {
@@ -15,7 +16,7 @@ interface JwtPayload {
 }
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'https://matrimony-backend-f5eo.onrender.com/api/auth'; // your backend URL
+  private apiUrl = `${BaseUrl}/api/auth`; // your backend URL
   private tokenKey = 'authToken';
   private userId = 'userId';
   private userRole = 'userRole';
