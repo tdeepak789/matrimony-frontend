@@ -44,7 +44,7 @@
 
       <button [matMenuTriggerFor]="profileMenu" class="flex items-center gap-3 pl-2 pr-1 py-1 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
         <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-sm bg-slate-100">
-          <img [src]="getAvatarUrl()" (error)="$any($event.target).src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjVmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSIzNSIgZmlsbD0iI2QxZDVkYiIvPjxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjZDFkNWRiIi8+PC9zdmc+'" class="w-full h-full object-cover">
+          <img [src]="avatarUrl" (error)="onAvatarError($event)" class="w-full h-full object-cover">
         </div>
         <i class="bi bi-chevron-down text-xs text-slate-400 mr-2"></i>
       </button>

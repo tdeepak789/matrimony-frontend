@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreatedUserProfileResponse, CreateUserProfile, UserProfile } from '../models/app.models';
+import { CreatedUserProfileResponse, UserPhoto, UserProfile } from '../models/app.models';
 import { Observable, shareReplay } from 'rxjs';
 import { MetaDataResponse } from '../models/MetaDataResponse';
 import { BaseUrl } from '../models/constants';
@@ -23,6 +23,9 @@ export class UserserviceService {
   getFileUrl(userId: number): string {
     return `${this.apiUrl}/File/download/${userId}`;
   }
+  getUserImages(userId: number): Observable<UserPhoto[]> {
+    return this.http.get<UserPhoto[]>(`${this.apiUrl}/File/users/${userId}/images`);
+  }
   apiUrl = `${BaseUrl}/api`; // Replace with your actual API endpoint
   constructor(private http:HttpClient) { }
 
@@ -43,17 +46,23 @@ export class UserserviceService {
     }
     return this.metadata$;
   }
-  uploadUserPhotos(files: File[], userId: number): Observable<any> {
+  uploadUserPhotos(files: File[], sortOrders: number[], userId: number): Observable<any> {
     const formData: FormData = new FormData();
-    
-    files.forEach((file) => {
-      // The first argument MUST match the name of the parameter in your C# method (files)
+
+    files.forEach((file, index) => {
       formData.append('files', file, file.name);
+      formData.append('sortOrders', `${sortOrders[index]}`);
     });
 
-    // IMPORTANT: Do NOT set HttpHeaders for 'Content-Type'. 
-    // Let the browser set it to 'multipart/form-data' with the correct boundary.
     return this.http.post<any>(`${this.apiUrl}/File/upload/${userId}`, formData);
+  }
+
+  deleteUserImage(userId: number, imageId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/File/users/${userId}/images/${imageId}`);
+  }
+
+  reorderUserImages(userId: number, orderedImageIds: string[]): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/File/users/${userId}/images/order`, orderedImageIds);
   }
 
   addUserToInterestedProfile(userId:number, userProfileId:number):Observable<any> {

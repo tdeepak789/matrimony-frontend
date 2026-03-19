@@ -75,12 +75,28 @@
       <span class="text-sm text-gray-500 font-medium">{{ filteredUsers().length }} Profiles Found</span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-7">
       @for (user of filteredUsers(); track user.id) {
         <div class="bg-white rounded-3xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all group">
-          <div class="relative h-64 overflow-hidden">
-            <img [src]="getFileUrl(user.id)" (error)="onPhotoError($event)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <div class="relative h-[22rem] sm:h-[26rem] lg:h-[24rem] 2xl:h-[22rem] overflow-hidden">
+            <img [src]="getCardImageUrl(user.id)" (error)="onCardPhotoError($event)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent"></div>
+
+            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/45 text-white text-xs font-semibold" *ngIf="getImageCount(user.id) > 0">
+              {{ getCurrentImagePosition(user.id) }} / {{ getImageCount(user.id) }}
+            </div>
+
+            <button *ngIf="getImageCount(user.id) > 1"
+                    (click)="prevImage(user.id, $event)"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/45 text-white hover:bg-black/60 transition-all">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <button *ngIf="getImageCount(user.id) > 1"
+                    (click)="nextImage(user.id, $event)"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/45 text-white hover:bg-black/60 transition-all">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+
             <div class="absolute bottom-4 left-4 text-white">
               <h3 class="text-xl font-bold">{{user.firstName}} {{user.lastName}}</h3>
               <p class="text-sm opacity-90">{{ calculateAge(user.dateOfBirth) }} yrs • {{user.caste}}</p>

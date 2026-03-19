@@ -1,23 +1,24 @@
 import { Component } from '@angular/core';
-import { UserProfile } from '../../models/app.models';
+import { UserPhoto, UserProfile } from '../../models/app.models';
 import { UserserviceService } from '../../services/userservice.service';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MetaDataResponse } from '../../models/MetaDataResponse';
 import { AuthService } from '../../auth.service';
-import { BaseUrl } from '../../models/constants';
+import { forkJoin } from 'rxjs';
 
 
 @Component({
   selector: 'app-user-list',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, FormsModule,CommonModule],
+  imports: [ReactiveFormsModule, RouterLink, FormsModule, CommonModule],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent {
   users: UserProfile[] = [];
-  selectedFiles: File[] = [];
+  userImagesMap: Record<number, UserPhoto[]> = {};
+  activeImageIndexMap: Record<number, number> = {};
   selectedGender: string = '';
   selectedReligion: string = '';
   selectedCaste: string = '';
@@ -51,6 +52,7 @@ export class UserListComponent {
     this.userService.getUsersProfiles().subscribe(
       (data: UserProfile[]) => {
         this.users = data;
+        this.loadImagesForUsers(this.users);
         console.log('Fetched user profiles:', this.users);
       },
       (error) => {
@@ -93,48 +95,51 @@ export class UserListComponent {
       );
   }
 
-  onFileChange(event: any, id:any) {
-    const files: FileList = event.target.files;
-    console.log('Selected user to file upload', id);
-    if (files.length > 3) {
-      alert("You can upload up to 3 pictures only.");
+  private loadImagesForUsers(users: UserProfile[]) {
+    if (!users.length) {
+      this.userImagesMap = {};
+      this.activeImageIndexMap = {};
       return;
     }
-    this.selectedFiles = [];
-    for (let i = 0; i < files.length; i++) {
-      this.selectedFiles.push(files[i]);
-    }
+
+    const imageRequests = users.map(user =>
+      this.userService.getUserImages(user.id)
+    );
+
+    forkJoin(imageRequests).subscribe({
+      next: (imagesByUser) => {
+        const imageMap: Record<number, UserPhoto[]> = {};
+        const indexMap: Record<number, number> = {};
+
+        users.forEach((user, idx) => {
+          const images = imagesByUser[idx] ?? [];
+          imageMap[user.id] = images;
+          indexMap[user.id] = 0;
+        });
+
+        this.userImagesMap = imageMap;
+        this.activeImageIndexMap = indexMap;
+      },
+      error: (error) => {
+        console.error('Error fetching user images:', error);
+      }
+    });
   }
-   onPhotoSubmit(userId:any) {
-    if (this.selectedFiles.length === 0) {
-      
-      return;
-    }
-    if(this.selectedFiles.length > 3) {
-      alert("You can upload up to 3 pictures only.");
-      return;
-    }
-    this.userService.uploadUserPhotos(this.selectedFiles,userId ).subscribe(
-        (response) => {
-          console.log('User profile added successfully:', response);
-          alert(`Photos uploaded successfully! ${response}` );
-           this.router.navigate(['']);
-        },
-        (error) => {
-          console.error('Error adding user profile:', error);
-        }
-      );
-    // Handle form submission logic here
-    console.log('Selected files:', this.selectedFiles);
-  }
+
   // use absolute path to avoid relative-route 404s (e.g. /user-details/...)
   defaultAvatarUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlMGUwZTAiLz4KICAKICA8IS0tIEhlYWQgLS0+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iNzAiIHI9IjM1IiBmaWxsPSIjOTk5Ii8+CiAgCiAgPCEtLSBCb2R5IC0tPgogIDxwYXRoIGQ9Ik0gNjUgMTA1IFEgNjUgMTEwIDcwIDExMCBMIDEzMCAxMTAgUSAxMzUgMTEwIDEzNSAxMDUgTCAxMzUgMTcwIFEgMTM1IDE3NSAxMzAgMTc1IEwgNzAgMTc1IFEgNjUgMTc1IDY1IDE3MCBaIiBmaWxsPSIjOTk5Ii8+Cjwvc3ZnPg==';
 
-  getFileUrl(userId: any): string {
-    return `${BaseUrl}/api/File/download/${userId}`;
+  getCardImageUrl(userId: number): string {
+    const images = this.userImagesMap[userId] ?? [];
+    if (!images.length) {
+      return this.defaultAvatarUrl;
+    }
+
+    const currentIndex = this.activeImageIndexMap[userId] ?? 0;
+    return images[currentIndex]?.url || images[0]?.url || this.defaultAvatarUrl;
   }
 
-  onPhotoError(event: any) {
+  onCardPhotoError(event: any) {
     const img = event?.target as HTMLImageElement | undefined;
     if (!img) return;
     // Avoid re-setting fallback repeatedly (prevents flicker/shaking)
@@ -142,6 +147,34 @@ export class UserListComponent {
     img.onerror = null;
     img.dataset['fallback'] = '1';
     img.src = this.defaultAvatarUrl;
+  }
+
+  getImageCount(userId: number): number {
+    return this.userImagesMap[userId]?.length ?? 0;
+  }
+
+  getCurrentImagePosition(userId: number): number {
+    const imageCount = this.getImageCount(userId);
+    if (!imageCount) return 0;
+    return (this.activeImageIndexMap[userId] ?? 0) + 1;
+  }
+
+  prevImage(userId: number, event: Event) {
+    event.stopPropagation();
+    const images = this.userImagesMap[userId] ?? [];
+    if (images.length <= 1) return;
+
+    const currentIndex = this.activeImageIndexMap[userId] ?? 0;
+    this.activeImageIndexMap[userId] = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+  }
+
+  nextImage(userId: number, event: Event) {
+    event.stopPropagation();
+    const images = this.userImagesMap[userId] ?? [];
+    if (images.length <= 1) return;
+
+    const currentIndex = this.activeImageIndexMap[userId] ?? 0;
+    this.activeImageIndexMap[userId] = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
   }
   filteredUsers(): UserProfile[] {
     let filtered = this.showInterests

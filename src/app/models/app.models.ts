@@ -27,6 +27,13 @@ export interface UserProfile {
   phoneNumber: number;
 }
 
+export interface UserPhoto {
+  id: string;
+  fileName: string;
+  url: string;
+  sortOrder: number;
+}
+
 
 export interface CreateUserProfile {
 
