@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreatedUserProfileResponse, UserPhoto, UserProfile } from '../models/app.models';
+import { CreatedUserProfileResponse, PagedResponse, UserListQuery, UserPhoto, UserProfile } from '../models/app.models';
 import { Observable, shareReplay } from 'rxjs';
 import { MetaDataResponse, MetadataOption } from '../models/MetaDataResponse';
 import { BaseUrl } from '../models/constants';
@@ -29,8 +29,18 @@ export class UserserviceService {
   apiUrl = `${BaseUrl}/api`; // Replace with your actual API endpoint
   constructor(private http:HttpClient) { }
 
-  getUsersProfiles(): Observable<UserProfile[]> {
-    return this.http.get<UserProfile[]>(`${this.apiUrl}/User/profiles`);
+  getUsersProfiles(query: UserListQuery): Observable<PagedResponse<UserProfile>> {
+    const queryParams = new URLSearchParams();
+    queryParams.set('page', query.page.toString());
+    queryParams.set('pageSize', query.pageSize.toString());
+
+    if (query.search) queryParams.set('search', query.search);
+    if (query.gender) queryParams.set('gender', query.gender);
+    if (query.religion) queryParams.set('religion', query.religion);
+    if (query.caste) queryParams.set('caste', query.caste);
+    if (query.maritalStatus) queryParams.set('maritalStatus', query.maritalStatus);
+
+    return this.http.get<PagedResponse<UserProfile>>(`${this.apiUrl}/User/profiles?${queryParams.toString()}`);
   }
 
   addUserProfile(profile: any): Observable<CreatedUserProfileResponse> {

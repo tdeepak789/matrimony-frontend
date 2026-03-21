@@ -67,3 +67,20 @@ export interface CreatedUserProfileResponse {
   token:string;
   userId:number;
 }
+
+export interface PagedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface UserListQuery {
+  page: number;
+  pageSize: number;
+  search?: string;
+  gender?: string;
+  religion?: string;
+  caste?: string;
+  maritalStatus?: string;
+}
