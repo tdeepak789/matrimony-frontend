@@ -251,6 +251,11 @@ export class UserListComponent {
     this.userService.addUserToInterestedProfile(this.auth.getUserId(),userId).subscribe(
       (response)=>
       {
+        const selectedUser = this.users.find(user => user.id === userId);
+        if (selectedUser && !this.isUserInterested(userId)) {
+          this.interestedUserProfiles = [...(this.interestedUserProfiles ?? []), selectedUser];
+        }
+        this.refreshInterestedProfiles();
         console.log(`User added to interested to profile success fully`);
       },
       (error)=>
@@ -267,23 +272,24 @@ export class UserListComponent {
   {
     this.userService.removeUserFromInterestedProfile(this.auth.getUserId(), userId).subscribe(
       (response) => {
-        // Remove user from local array for instant UI update
-          this.userService.getInterestedProfiles(this.auth.getUserId()).subscribe(
-          (response:any)=>
-          {
-            this.interestedUserProfiles = response?.profilesInterestedByUser;
-            this.profilesInterestedInUser = response?.profilesInterestedInUser;
-          },
-          (error:any)=>
-          {
-            console.error('Error fetching user interests profiles:', error);
-          }
-            
-        );
+        this.interestedUserProfiles = (this.interestedUserProfiles ?? []).filter(user => user.id !== userId);
+        this.refreshInterestedProfiles();
         console.log('User removed from interested profiles');
       },
       (error) => {
         console.error('Error removing user from interested profiles', error);
+      }
+    );
+  }
+
+  private refreshInterestedProfiles() {
+    this.userService.getInterestedProfiles(this.auth.getUserId()).subscribe(
+      (response: any) => {
+        this.interestedUserProfiles = response?.profilesInterestedByUser ?? [];
+        this.profilesInterestedInUser = response?.profilesInterestedInUser ?? [];
+      },
+      (error: any) => {
+        console.error('Error fetching user interests profiles:', error);
       }
     );
   }
