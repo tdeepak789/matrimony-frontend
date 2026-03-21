@@ -62,9 +62,10 @@
                 </div>
                 
                 <select [formControlName]="field.name"
+                        [disabled]="getSelectOptions(field.name).length === 0"
                         class="soul-select w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:bg-white outline-none transition-all text-slate-700 font-bold appearance-none cursor-pointer">
-                  <option value="" disabled selected>Select {{field.label}}</option>
-                  @for (option of metaOptions[field.name]; track option) {
+                  <option value="" disabled>Select {{field.label}}</option>
+                  @for (option of getSelectOptions(field.name); track option) {
                     <option [value]="option">{{option}}</option>
                   }
                 </select>

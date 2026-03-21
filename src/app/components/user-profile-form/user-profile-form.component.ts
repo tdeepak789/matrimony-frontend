@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
-import { UserProfile } from '../../models/app.models';
 import { UserserviceService } from '../../services/userservice.service';
 import { CommonModule } from '@angular/common';
-import { MetaDataResponse } from '../../models/MetaDataResponse';
+import { MetaDataResponse, MetadataOption } from '../../models/MetaDataResponse';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-user-profile-form',
@@ -25,6 +25,10 @@ export class UserProfileFormComponent {
   isEditMode = false;
   userId!: number;
   metaOptions: { [key: string]: string[] } = {}
+  private religionOptions: MetadataOption[] = [];
+  private casteOptions: MetadataOption[] = [];
+  private countryOptions: MetadataOption[] = [];
+  private stateOptions: MetadataOption[] = [];
 
   steps: FormStep[] = [
     {
@@ -49,8 +53,8 @@ export class UserProfileFormComponent {
       controls: ['religion', 'caste', 'subcaste', 'gothram', 'star', 'rasi'],
       fields: [
         { name: 'religion', label: 'Religion', type: FieldType.Select, required: true },
-        { name: 'caste', label: 'Caste', type: FieldType.Text, placeholder: "Caste name" },
-        { name: 'subcaste', label: 'Subcaste', type: FieldType.Text, placeholder: "optional" },
+        { name: 'caste', label: 'Caste', type: FieldType.Select },
+        { name: 'subcaste', label: 'Subcaste', type: FieldType.Select },
         { name: 'gothram', label: 'Gothram', type: FieldType.Text, placeholder: "optional" },
         { name: 'star', label: 'Star', type: FieldType.Select },
         { name: 'rasi', label: 'Rasi', type: FieldType.Select }
@@ -86,14 +90,16 @@ export class UserProfileFormComponent {
           maritalStatus: data.maritalStatuses,
           motherTongue: data.languages,
           country: data.countries,
-          state: data.states,
-          city: data.cities,
+          state: [],
+          city: [],
           gender: data.genders,
           star: data.star,
-          rasi: data.rasi
+          rasi: data.rasi,
+          caste: [],
+          subcaste: []
         }
 
-        console.log('Fetched metadata:', data);
+        this.setupDependentMetadataLoading();
       },
       error: (error) => {
         console.error('Error fetching metadata:', error);
@@ -105,7 +111,129 @@ export class UserProfileFormComponent {
       this.isEditMode = true;
     }
   }
+
+  private setupDependentMetadataLoading() {
+    this.userService.getMetadataOptions('religion').subscribe({
+      next: (options) => this.religionOptions = options,
+      error: (error) => console.error('Error loading religion options:', error)
+    });
+
+    this.userService.getMetadataOptions('country').subscribe({
+      next: (options) => this.countryOptions = options,
+      error: (error) => console.error('Error loading country options:', error)
+    });
+
+    this.profileForm.get('religion')?.valueChanges.subscribe((religion) => {
+      this.profileForm.patchValue({ caste: '', subcaste: '' }, { emitEvent: false });
+      this.metaOptions['caste'] = [];
+      this.metaOptions['subcaste'] = [];
+
+      if (!religion) {
+        return;
+      }
+
+      this.loadCastesByReligion(religion);
+    });
+
+    this.profileForm.get('caste')?.valueChanges.subscribe((caste) => {
+      this.profileForm.patchValue({ subcaste: '' }, { emitEvent: false });
+      this.metaOptions['subcaste'] = [];
+
+      if (!caste) {
+        return;
+      }
+
+      this.loadSubCastesByCaste(caste);
+    });
+
+    this.profileForm.get('country')?.valueChanges.subscribe((country) => {
+      this.profileForm.patchValue({ state: '', city: '' }, { emitEvent: false });
+      this.metaOptions['state'] = [];
+      this.metaOptions['city'] = [];
+
+      if (!country) {
+        return;
+      }
+
+      this.loadStatesByCountry(country);
+    });
+
+    this.profileForm.get('state')?.valueChanges.subscribe((state) => {
+      this.profileForm.patchValue({ city: '' }, { emitEvent: false });
+      this.metaOptions['city'] = [];
+
+      if (!state) {
+        return;
+      }
+
+      this.loadCitiesAndTownsByState(state);
+    });
+  }
+
+  private loadStatesByCountry(countryName: string) {
+    const selectedCountry = this.countryOptions.find(option => option.name === countryName);
+    if (!selectedCountry?.id) {
+      return;
+    }
+
+    this.userService.getMetadataOptions('state', selectedCountry.id).subscribe({
+      next: (options) => {
+        this.stateOptions = options;
+        this.metaOptions['state'] = options.map(option => option.name);
+      },
+      error: (error) => console.error('Error loading states:', error)
+    });
+  }
+
+  private loadCitiesAndTownsByState(stateName: string) {
+    const selectedState = this.stateOptions.find(option => option.name === stateName);
+    if (!selectedState?.id) {
+      return;
+    }
+
+    forkJoin([
+      this.userService.getMetadataOptions('city', selectedState.id),
+      this.userService.getMetadataOptions('town', selectedState.id)
+    ]).subscribe({
+      next: ([cities, towns]) => {
+        this.metaOptions['city'] = [...cities, ...towns].map(option => option.name);
+      },
+      error: (error) => console.error('Error loading cities/towns:', error)
+    });
+  }
+
+  private loadCastesByReligion(religionName: string) {
+    const selectedReligion = this.religionOptions.find(option => option.name === religionName);
+    if (!selectedReligion?.id) {
+      return;
+    }
+
+    this.userService.getMetadataOptions('caste', selectedReligion.id).subscribe({
+      next: (options) => {
+        this.casteOptions = options;
+        this.metaOptions['caste'] = options.map(option => option.name);
+      },
+      error: (error) => console.error('Error loading castes:', error)
+    });
+  }
+
+  private loadSubCastesByCaste(casteName: string) {
+    const selectedCaste = this.casteOptions.find(option => option.name === casteName);
+    if (!selectedCaste?.id) {
+      return;
+    }
+
+    this.userService.getMetadataOptions('subcaste', selectedCaste.id).subscribe({
+      next: (options) => this.metaOptions['subcaste'] = options.map(option => option.name),
+      error: (error) => console.error('Error loading subcastes:', error)
+    });
+  }
   constructor(private userService: UserserviceService, private router: Router, private route: ActivatedRoute, private authService: AuthService) { }
+
+  getSelectOptions(fieldName: string): string[] {
+    return this.metaOptions[fieldName] ?? [];
+  }
+
   profileForm = new FormGroup({
     email: new FormControl('', Validators.email),
     firstName: new FormControl('', Validators.required),
@@ -220,6 +348,7 @@ export class UserProfileFormComponent {
             console.log('User profile added successfully:', response);
             this.profileForm.reset();
             this.authService.saveToken(response.token);
+            this.authService.saveUserId(response.userId);
             this.router.navigate(['user-details', response.userId]);
           },
           (error) => {

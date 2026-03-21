@@ -4,7 +4,7 @@ import { UserserviceService } from '../../services/userservice.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MetaDataResponse } from '../../models/MetaDataResponse';
+import { MetaDataResponse, MetadataOption } from '../../models/MetaDataResponse';
 import { AuthService } from '../../auth.service';
 import { forkJoin } from 'rxjs';
 
@@ -36,6 +36,7 @@ export class UserListComponent {
   star: string[]=[];
   rasi: string[]=[];
   caste: string[]=[];
+  private religionOptions: MetadataOption[] = [];
 
   showInterests:boolean=false;
 
@@ -64,14 +65,13 @@ export class UserListComponent {
          next:( data:MetaDataResponse) => {
             this.religions = data.religions;
             this.maritalStatuses = data.maritalStatuses;
-            this.languages = data.languages;
-            this.countries = data.countries;
-            this.states = data.states;
-            this.cities = data.cities;
             this.genders = data.genders;
-            this.star = data.star;
-            this.rasi = data.rasi;
-            console.log('Fetched metadata:', data);
+            this.caste = data.castes ?? [];
+
+            this.userService.getMetadataOptions('religion').subscribe({
+              next: (options) => this.religionOptions = options,
+              error: (error) => console.error('Error loading religion option IDs:', error)
+            });
           },
           error: (error) => {
             console.error('Error fetching metadata:', error);
@@ -205,6 +205,29 @@ export class UserListComponent {
     }
 
     return filtered;
+  }
+
+  onReligionFilterChange() {
+    this.selectedCaste = '';
+
+    if (!this.selectedReligion) {
+      this.userService.getMetaData().subscribe({
+        next: (data) => this.caste = data.castes ?? [],
+        error: (error) => console.error('Error loading all castes:', error)
+      });
+      return;
+    }
+
+    const selectedReligion = this.religionOptions.find(option => option.name === this.selectedReligion);
+    if (!selectedReligion?.id) {
+      this.caste = [];
+      return;
+    }
+
+    this.userService.getMetadataOptions('caste', selectedReligion.id).subscribe({
+      next: (options) => this.caste = options.map(option => option.name),
+      error: (error) => console.error('Error loading castes by religion:', error)
+    });
   }
 
   deleteUser(userId: any) {

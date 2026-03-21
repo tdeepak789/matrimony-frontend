@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CreatedUserProfileResponse, UserPhoto, UserProfile } from '../models/app.models';
 import { Observable, shareReplay } from 'rxjs';
-import { MetaDataResponse } from '../models/MetaDataResponse';
+import { MetaDataResponse, MetadataOption } from '../models/MetaDataResponse';
 import { BaseUrl } from '../models/constants';
 
 @Injectable({
@@ -37,14 +37,31 @@ export class UserserviceService {
     return this.http.post<any>(`${this.apiUrl}/User/profiles`, profile);
   }
 
-  getMetaData(): Observable<any> {
-    // return this.http.get<MetaDataResponse>(`${this.apiUrl}/metadata`);
+  getMetaData(): Observable<MetaDataResponse> {
     if (!this.metadata$) {
       this.metadata$ = this.http.get<MetaDataResponse>(`${this.apiUrl}/metadata`).pipe(
-        shareReplay(1) // ✅ cache the latest value, so request happens only once
+        shareReplay(1)
       );
     }
     return this.metadata$;
+  }
+
+  clearMetaDataCache(): void {
+    this.metadata$ = null;
+  }
+
+  getMetadataOptions(category: string, parentId?: number, search?: string): Observable<MetadataOption[]> {
+    const queryParams = new URLSearchParams();
+    if (parentId !== undefined && parentId !== null) {
+      queryParams.set('parentId', parentId.toString());
+    }
+    if (search) {
+      queryParams.set('search', search);
+    }
+
+    const query = queryParams.toString();
+    const endpoint = `${this.apiUrl}/metadata/options/${encodeURIComponent(category)}${query ? `?${query}` : ''}`;
+    return this.http.get<MetadataOption[]>(endpoint);
   }
   uploadUserPhotos(files: File[], sortOrders: number[], userId: number): Observable<any> {
     const formData: FormData = new FormData();
