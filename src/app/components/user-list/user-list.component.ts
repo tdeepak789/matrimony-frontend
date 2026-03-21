@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { UserPhoto, UserProfile } from '../../models/app.models';
 import { UserserviceService } from '../../services/userservice.service';
 import { CommonModule } from '@angular/common';
@@ -16,7 +16,10 @@ import { forkJoin } from 'rxjs';
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent {
+  @ViewChild('listTop') listTop!: ElementRef<HTMLElement>;
   users: UserProfile[] = [];
+  currentPage = 1;
+  pageSize = 9;
   userImagesMap: Record<number, UserPhoto[]> = {};
   activeImageIndexMap: Record<number, number> = {};
   selectedGender: string = '';
@@ -46,6 +49,7 @@ export class UserListComponent {
 
   setInterestView(view: 'byUser' | 'inUser') {
     this.interestView = view;
+    this.currentPage = 1;
   }
   constructor(private userService: UserserviceService, private router: Router,public auth:AuthService,private route: ActivatedRoute ) {}
 
@@ -207,7 +211,51 @@ export class UserListComponent {
     return filtered;
   }
 
+  onFiltersChanged() {
+    this.currentPage = 1;
+  }
+
+  get totalFilteredUsers(): number {
+    return this.filteredUsers().length;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalFilteredUsers / this.pageSize));
+  }
+
+  paginatedUsers(): UserProfile[] {
+    const filtered = this.filteredUsers();
+    const safeCurrentPage = Math.min(this.currentPage, this.totalPages);
+    const startIndex = (safeCurrentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+    if (this.currentPage === page) {
+      return;
+    }
+    this.currentPage = page;
+    this.scrollToListTop();
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  previousPage() {
+    this.goToPage(this.currentPage - 1);
+  }
+
   onReligionFilterChange() {
+    this.onFiltersChanged();
     this.selectedCaste = '';
 
     if (!this.selectedReligion) {
@@ -296,6 +344,7 @@ export class UserListComponent {
   UpdateShowInterests()
   {
     this.showInterests = !this.showInterests;
+    this.currentPage = 1;
   }
   trackByUserId(index: number, user: UserProfile) {
      return user.id;
@@ -325,5 +374,11 @@ export class UserListComponent {
 
   toggleFilters() {
     this.isFilterVisible = !this.isFilterVisible;
+  }
+
+  private scrollToListTop() {
+    setTimeout(() => {
+      this.listTop?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   }
 }

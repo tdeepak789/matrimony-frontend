@@ -20,13 +20,13 @@
     <div class="space-y-6">
       <div class="filter-group">
         <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Search by Name</label>
-        <input type="text" [(ngModel)]="searchText" placeholder="Enter name..." 
+        <input type="text" [(ngModel)]="searchText" (ngModelChange)="onFiltersChanged()" placeholder="Enter name..." 
                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
       </div>
 
       <div class="filter-group">
         <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Gender</label>
-        <select [(ngModel)]="selectedGender" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+        <select [(ngModel)]="selectedGender" (ngModelChange)="onFiltersChanged()" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
           <option value="">All Genders</option>
           <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
         </select>
@@ -42,7 +42,7 @@
 
       <div class="filter-group">
         <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Caste</label>
-        <select [(ngModel)]="selectedCaste" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+        <select [(ngModel)]="selectedCaste" (ngModelChange)="onFiltersChanged()" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
           <option value="">All Castes</option>
           <option *ngFor="let c of caste" [value]="c">{{ c }}</option>
         </select>
@@ -50,7 +50,7 @@
 
       <div class="filter-group">
         <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Marital Status</label>
-        <select [(ngModel)]="selectedMaritalStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+        <select [(ngModel)]="selectedMaritalStatus" (ngModelChange)="onFiltersChanged()" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
           <option value="">All Statuses</option>
           <option *ngFor="let m of maritalStatuses" [value]="m">{{ m }}</option>
         </select>
@@ -58,7 +58,7 @@
     </div>
   </aside>
 
-  <main class="flex-1 p-4 md:p-8 relative z-0">
+  <main #listTop class="flex-1 p-4 md:p-8 relative z-0">
     <div class="mb-8 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm" *ngIf="showInterests">
       <div class="inline-flex bg-gray-100 p-1 rounded-xl">
         <button (click)="setInterestView('byUser')" 
@@ -74,11 +74,11 @@
           Interested In You
         </button>
       </div>
-      <span class="text-sm text-gray-500 font-medium">{{ filteredUsers().length }} Profiles Found</span>
+      <span class="text-sm text-gray-500 font-medium">{{ totalFilteredUsers }} Profiles Found</span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-7">
-      @for (user of filteredUsers(); track user.id) {
+    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-7">
+      @for (user of paginatedUsers(); track user.id) {
         <div class="bg-white rounded-3xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all group">
           <div class="relative h-[22rem] sm:h-[26rem] lg:h-[24rem] 2xl:h-[22rem] overflow-hidden">
             <img [src]="getCardImageUrl(user.id)" (error)="onCardPhotoError($event)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
@@ -131,6 +131,33 @@
           </div>
         </div>
       }
+    </div>
+
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-200" *ngIf="totalFilteredUsers > 0">
+      <span class="text-sm text-gray-500 font-medium">Page {{ currentPage }} of {{ totalPages }}</span>
+
+      <div class="flex items-center gap-2">
+        <button
+          (click)="previousPage()"
+          [disabled]="currentPage === 1"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-all">
+          Prev
+        </button>
+
+        <button
+          *ngFor="let page of pageNumbers"
+          (click)="goToPage(page)"
+          [class]="page === currentPage ? 'px-3 py-1.5 rounded-lg text-sm font-bold bg-rose-600 text-white' : 'px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all'">
+          {{ page }}
+        </button>
+
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-all">
+          Next
+        </button>
+      </div>
     </div>
   </main>
 </div>
